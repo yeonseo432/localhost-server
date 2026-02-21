@@ -16,6 +16,7 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -72,4 +73,31 @@ class StoreController(
         @Valid @RequestBody request: StoreRequest,
         @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
     ): StoreResponse = storeService.create(request, ownerId)
+
+    @Operation(summary = "매장 삭제", description = "본인 매장만 삭제 가능합니다. OWNER 계정으로 로그인 후 Bearer 토큰을 입력해야 합니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "204", description = "매장 삭제 성공"),
+        ApiResponse(
+            responseCode = "401",
+            description = "인증 필요",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+        ApiResponse(
+            responseCode = "403",
+            description = "본인 매장 아님",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+        ApiResponse(
+            responseCode = "404",
+            description = "매장 없음",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+    )
+    @DeleteMapping("/{storeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('OWNER')")
+    fun delete(
+        @PathVariable storeId: Long,
+        @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
+    ) = storeService.delete(storeId, ownerId)
 }
