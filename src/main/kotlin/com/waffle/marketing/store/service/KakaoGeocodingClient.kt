@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
-import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestClientException
+import org.springframework.web.client.RestClientResponseException
 
 data class GeoPoint(
     val lat: Double,
