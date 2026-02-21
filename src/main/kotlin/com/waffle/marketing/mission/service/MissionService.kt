@@ -43,7 +43,10 @@ class MissionService(
 
     /** 매장 미션 목록 조회 (활성 미션만). type 지정 시 해당 타입만 반환. */
     @Transactional(readOnly = true)
-    fun getMissionsByStore(storeId: Long, type: MissionType?): List<MissionDefinitionResponse> {
+    fun getMissionsByStore(
+        storeId: Long,
+        type: MissionType?,
+    ): List<MissionDefinitionResponse> {
         val missions =
             if (type != null) {
                 missionDefinitionRepository.findByStoreIdAndIsActiveTrueAndType(storeId, type)

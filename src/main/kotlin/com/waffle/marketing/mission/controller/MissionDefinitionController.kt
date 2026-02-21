@@ -40,8 +40,9 @@ class MissionDefinitionController(
 ) {
     @Operation(
         summary = "매장 미션 목록 조회",
-        description = "활성 상태(isActive=true)인 미션만 반환합니다. type 파라미터로 특정 미션 타입만 필터링할 수 있습니다.\n" +
-            "가능한 값: TIME_WINDOW, DWELL, RECEIPT, INVENTORY, STAMP",
+        description =
+            "활성 상태(isActive=true)인 미션만 반환합니다. type 파라미터로 특정 미션 타입만 필터링할 수 있습니다.\n" +
+                "가능한 값: TIME_WINDOW, DWELL, RECEIPT, INVENTORY, STAMP",
     )
     @ApiResponse(responseCode = "200", description = "미션 목록 반환")
     @SecurityRequirements // 공개
