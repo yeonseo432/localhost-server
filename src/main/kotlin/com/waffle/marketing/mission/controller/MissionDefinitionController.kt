@@ -7,6 +7,7 @@ import com.waffle.marketing.mission.dto.MissionDefinitionResponse
 import com.waffle.marketing.mission.dto.MissionUpdateRequest
 import com.waffle.marketing.mission.dto.PresignedUrlRequest
 import com.waffle.marketing.mission.dto.PresignedUrlResponse
+import com.waffle.marketing.mission.model.MissionType
 import com.waffle.marketing.mission.service.MissionService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
@@ -36,13 +38,18 @@ import org.springframework.web.bind.annotation.RestController
 class MissionDefinitionController(
     private val missionService: MissionService,
 ) {
-    @Operation(summary = "매장 미션 목록 조회", description = "활성 상태(isActive=true)인 미션만 반환합니다.")
+    @Operation(
+        summary = "매장 미션 목록 조회",
+        description = "활성 상태(isActive=true)인 미션만 반환합니다. type 파라미터로 특정 미션 타입만 필터링할 수 있습니다.\n" +
+            "가능한 값: TIME_WINDOW, DWELL, RECEIPT, INVENTORY, STAMP",
+    )
     @ApiResponse(responseCode = "200", description = "미션 목록 반환")
     @SecurityRequirements // 공개
     @GetMapping
     fun list(
         @PathVariable storeId: Long,
-    ): List<MissionDefinitionResponse> = missionService.getMissionsByStore(storeId)
+        @RequestParam(required = false) type: MissionType?,
+    ): List<MissionDefinitionResponse> = missionService.getMissionsByStore(storeId, type)
 
     @Operation(summary = "미션 단건 조회")
     @ApiResponses(
