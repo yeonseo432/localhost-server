@@ -16,6 +16,7 @@ import com.waffle.marketing.mission.model.MissionDefinition
 import com.waffle.marketing.mission.model.MissionType
 import com.waffle.marketing.mission.repository.MissionAttemptRepository
 import com.waffle.marketing.mission.repository.MissionDefinitionRepository
+import com.waffle.marketing.common.time.TimeProvider
 import com.waffle.marketing.reward.repository.RewardLedgerRepository
 import com.waffle.marketing.reward.service.RewardService
 import com.waffle.marketing.store.repository.StoreRepository
@@ -24,8 +25,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.ObjectNode
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 @Service
@@ -38,6 +37,7 @@ class MissionService(
     private val s3ImageServiceProvider: ObjectProvider<S3ImageService>,
     private val objectMapper: ObjectMapper,
     private val fastApiMissionClient: FastApiMissionClient,
+    private val timeProvider: TimeProvider,
 ) {
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
@@ -264,7 +264,7 @@ class MissionService(
                     userId = userId,
                     missionId = missionId,
                     status = AttemptStatus.PENDING,
-                    checkinAt = LocalDateTime.now(),
+                    checkinAt = timeProvider.now(),
                 ),
             )
         return attempt.toResponse()
@@ -287,7 +287,7 @@ class MissionService(
                 .ensureNotNull("미션을 찾을 수 없습니다: $missionId")
         val durationMinutes = objectMapper.readTree(mission.configJson).get("durationMinutes").asLong()
         val checkinTime = attempt.checkinAt ?: throw BadRequestException("체크인 시간을 찾을 수 없습니다")
-        val now = LocalDateTime.now()
+        val now = timeProvider.now()
         val elapsedMinutes = ChronoUnit.MINUTES.between(checkinTime, now)
 
         attempt.checkoutAt = now
@@ -315,7 +315,7 @@ class MissionService(
         val endHour = node.get("endHour").asInt()
         val days = node.get("days")?.map { it.textValue() ?: "" } ?: emptyList()
 
-        val now = LocalDateTime.now()
+        val now = timeProvider.now()
         // DayOfWeek.name → "MONDAY" → take(3) → "MON"
         val currentDay = now.dayOfWeek.name.take(3)
         val currentHour = now.hour
@@ -394,11 +394,11 @@ class MissionService(
     ): MissionAttemptResponse {
         val alreadyStampedToday =
             missionAttemptRepository
-                .existsByUserIdAndMissionIdAndAttemptDate(userId, missionId, LocalDate.now())
+                .existsByUserIdAndMissionIdAndAttemptDate(userId, missionId, timeProvider.today())
         if (alreadyStampedToday) {
             val todayAttempt =
                 missionAttemptRepository
-                    .findTopByUserIdAndMissionIdAndAttemptDateOrderByIdDesc(userId, missionId, LocalDate.now())
+                    .findTopByUserIdAndMissionIdAndAttemptDateOrderByIdDesc(userId, missionId, timeProvider.today())
                     .ensureNotNull("오늘 스탬프 기록을 찾을 수 없습니다")
             return todayAttempt.toResponse(retryHint = "오늘은 이미 스탬프를 찍었습니다. 내일 다시 방문해 주세요.")
         }
