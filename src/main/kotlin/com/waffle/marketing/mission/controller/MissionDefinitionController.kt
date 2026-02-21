@@ -146,7 +146,27 @@ class MissionDefinitionController(
     ): MissionDefinitionResponse = missionService.updateMission(storeId, missionId, request, ownerId)
 
     @Operation(
-        summary = "INVENTORY 답안 이미지 업로드 URL 발급",
+        summary = "INVENTORY 답안 이미지 업로드 URL 발급 (미션 생성 전)",
+        description = "OWNER 전용. 미션 생성 전 이미지를 먼저 S3에 업로드하기 위한 presigned URL 발급. missionId 불필요. (10분 유효)",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "presigned URL 반환"),
+        ApiResponse(
+            responseCode = "403",
+            description = "OWNER 권한 없음 또는 본인 매장 아님",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+    )
+    @PostMapping("/inventory/presigned-url")
+    @PreAuthorize("hasRole('OWNER')")
+    fun getStoreInventoryPresignedUrl(
+        @PathVariable storeId: Long,
+        @Valid @RequestBody request: PresignedUrlRequest,
+        @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
+    ): PresignedUrlResponse = missionService.generateStoreInventoryPresignedUrl(storeId, ownerId, request.contentType)
+
+    @Operation(
+        summary = "INVENTORY 답안 이미지 업로드 URL 발급 (기존 미션 수정용)",
         description = "OWNER 전용. 응답의 presignedUrl로 프론트에서 직접 S3 PUT 요청해 이미지를 업로드한 뒤 /image/confirm을 호출한다. (10분 유효)",
     )
     @ApiResponses(

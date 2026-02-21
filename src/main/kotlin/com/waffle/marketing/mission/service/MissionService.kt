@@ -153,7 +153,24 @@ class MissionService(
 
     // ── 이미지 업로드 (INVENTORY 답안 이미지) ────────────────────────────────
 
-    /** INVENTORY 미션 답안 이미지 업로드용 presigned PUT URL 발급 (OWNER 전용, prod 전용) */
+    /** INVENTORY 답안 이미지 업로드용 presigned PUT URL 발급 — 미션 생성 전 (missionId 불필요, OWNER 전용, prod 전용) */
+    fun generateStoreInventoryPresignedUrl(
+        storeId: Long,
+        ownerId: Long,
+        contentType: String,
+    ): PresignedUrlResponse {
+        val store =
+            storeRepository
+                .findById(storeId)
+                .orElse(null)
+                .ensureNotNull("매장을 찾을 수 없습니다: $storeId")
+        if (store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
+        val s3 = s3ImageServiceProvider.ifAvailable ?: throw BadRequestException("S3가 구성되지 않은 환경입니다")
+        val (presignedUrl, imageUrl) = s3.generateStorePresignedPutUrl(storeId, contentType)
+        return PresignedUrlResponse(presignedUrl = presignedUrl, imageUrl = imageUrl)
+    }
+
+    /** INVENTORY 미션 답안 이미지 업로드용 presigned PUT URL 발급 — 기존 미션 수정용 (OWNER 전용, prod 전용) */
     fun generateAnswerImagePresignedUrl(
         storeId: Long,
         missionId: Long,
@@ -443,8 +460,8 @@ class MissionService(
                 requireString("targetProductKey")
             }
             MissionType.INVENTORY -> {
-                // {"answerImageUrl":"https://..."} — 이미지는 /image/presigned-url → /image/confirm 플로우로 설정 가능
-                // 미션 생성 시점에는 빈 값도 허용 (이후 업로드 플로우로 설정)
+                // {"answerImageUrl":"https://..."} — 프론트에서 미리 S3에 업로드 후 URL을 설정
+                requireString("answerImageUrl")
             }
             MissionType.STAMP -> {
                 // {"requiredCount":5}
