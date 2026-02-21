@@ -81,13 +81,14 @@ class MissionService(
                 .orElse(null)
                 .ensureNotNull("매장을 찾을 수 없습니다: $storeId")
         if (store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
-        validateConfigJson(request.type, request.configJson)
+        val configJsonStr = request.configJson.toString()
+        validateConfigJson(request.type, configJsonStr)
         val mission =
             missionDefinitionRepository.save(
                 MissionDefinition(
                     store = store,
                     type = request.type,
-                    configJson = request.configJson,
+                    configJson = configJsonStr,
                     rewardAmount = request.rewardAmount,
                 ),
             )
@@ -109,8 +110,9 @@ class MissionService(
                 .ensureNotNull("미션을 찾을 수 없습니다: $missionId")
         if (mission.store.id != storeId) throw BadRequestException("해당 매장의 미션이 아닙니다")
         if (mission.store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
-        validateConfigJson(mission.type, request.configJson)
-        mission.configJson = request.configJson
+        val configJsonStr = request.configJson.toString()
+        validateConfigJson(mission.type, configJsonStr)
+        mission.configJson = configJsonStr
         mission.rewardAmount = request.rewardAmount
         mission.isActive = request.isActive
         return mission.toResponse()
