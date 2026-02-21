@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "Auth", description = "인증")
-@SecurityRequirements  // 전역 bearerAuth 적용 제외 (공개 엔드포인트)
+@SecurityRequirements // 전역 bearerAuth 적용 제외 (공개 엔드포인트)
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(

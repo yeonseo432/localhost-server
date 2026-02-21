@@ -24,19 +24,23 @@ class StoreService(
             .toResponse()
 
     @Transactional
-    fun create(request: StoreRequest, ownerId: Long): StoreResponse {
-        val store = storeRepository.save(
-            Store(
-                name = request.name,
-                lat = request.lat,
-                lng = request.lng,
-                radiusM = request.radiusM,
-                address = request.address,
-                ownerId = ownerId,
-                businessNumber = request.businessNumber,
-                imageUrl = request.imageUrl,
-            ),
-        )
+    fun create(
+        request: StoreRequest,
+        ownerId: Long,
+    ): StoreResponse {
+        val store =
+            storeRepository.save(
+                Store(
+                    name = request.name,
+                    lat = request.lat,
+                    lng = request.lng,
+                    radiusM = request.radiusM,
+                    address = request.address,
+                    ownerId = ownerId,
+                    businessNumber = request.businessNumber,
+                    imageUrl = request.imageUrl,
+                ),
+            )
         return store.toResponse()
     }
 

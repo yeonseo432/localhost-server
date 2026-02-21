@@ -31,28 +31,31 @@ class SecurityConfig(
                 exception.authenticationEntryPoint { _, response, _ ->
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
                 }
-            }
-            .authorizeHttpRequests { auth ->
+            }.authorizeHttpRequests { auth ->
                 auth
                     // 인증 공개
-                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/auth/**")
+                    .permitAll()
                     // API 문서
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                    .permitAll()
                     // 매장·미션 조회 (공개), 쓰기는 @PreAuthorize로 처리
-                    .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/stores/**")
+                    .permitAll()
                     // 나머지는 인증 필요
-                    .anyRequest().authenticated()
-            }
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+                    .anyRequest()
+                    .authenticated()
+            }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOrigins = listOf("*")
-        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+        config.allowedOriginPatterns = listOf("*")
+        config.allowedMethods = listOf("*")
         config.allowedHeaders = listOf("*")
+        config.allowCredentials = true
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", config)
         return source

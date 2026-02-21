@@ -15,9 +15,13 @@ class JwtTokenProvider(
 ) {
     private val key: SecretKey by lazy { Keys.hmacShaKeyFor(secretKey.toByteArray()) }
 
-    fun createToken(userId: Long, role: String): String {
+    fun createToken(
+        userId: Long,
+        role: String,
+    ): String {
         val now = Date()
-        return Jwts.builder()
+        return Jwts
+            .builder()
             .subject(userId.toString())
             .claim("role", role)
             .issuedAt(now)
@@ -39,5 +43,10 @@ class JwtTokenProvider(
         }
 
     private fun parseClaims(token: String): Claims =
-        Jwts.parser().verifyWith(key).build().parseSignedClaims(token).payload
+        Jwts
+            .parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .payload
 }

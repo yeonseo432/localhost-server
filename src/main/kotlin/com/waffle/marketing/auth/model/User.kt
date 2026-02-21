@@ -15,17 +15,13 @@ import jakarta.persistence.Table
 class User(
     @Column(nullable = false, unique = true, length = 12)
     val username: String,
-
     @Column(nullable = false, length = 12)
     var password: String,
-
     @Column(nullable = false, length = 50)
     var nickname: String,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     val role: UserRole = UserRole.USER,
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

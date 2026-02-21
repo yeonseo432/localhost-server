@@ -21,23 +21,25 @@ class AuthService(
         if (userRepository.existsByUsername(request.username)) {
             throw BadRequestException("이미 사용 중인 아이디입니다: ${request.username}")
         }
-        val user = userRepository.save(
-            User(
-                username = request.username,
-                password = request.password,
-                nickname = request.nickname,
-                role = request.role,
-            ),
-        )
+        val user =
+            userRepository.save(
+                User(
+                    username = request.username,
+                    password = request.password,
+                    nickname = request.nickname,
+                    role = request.role,
+                ),
+            )
         val token = jwtTokenProvider.createToken(user.id!!, user.role.name)
         return AuthResponse(token = token, userId = user.id!!, role = user.role.name)
     }
 
     @Transactional(readOnly = true)
     fun login(request: LoginRequest): AuthResponse {
-        val user = userRepository.findByUsername(request.username).orElseThrow {
-            UnauthorizedException("아이디 또는 비밀번호가 올바르지 않습니다")
-        }
+        val user =
+            userRepository.findByUsername(request.username).orElseThrow {
+                UnauthorizedException("아이디 또는 비밀번호가 올바르지 않습니다")
+            }
         if (user.password != request.password) {
             throw UnauthorizedException("아이디 또는 비밀번호가 올바르지 않습니다")
         }

@@ -32,7 +32,7 @@ class StoreController(
 ) {
     @Operation(summary = "전체 매장 목록 조회")
     @ApiResponse(responseCode = "200", description = "매장 목록 반환")
-    @SecurityRequirements  // 공개
+    @SecurityRequirements // 공개
     @GetMapping
     fun getAll(): List<StoreResponse> = storeService.getAll()
 
@@ -45,7 +45,7 @@ class StoreController(
             content = [Content(schema = Schema(implementation = ErrorResponse::class))],
         ),
     )
-    @SecurityRequirements  // 공개
+    @SecurityRequirements // 공개
     @GetMapping("/{storeId}")
     fun getById(
         @PathVariable storeId: Long,
