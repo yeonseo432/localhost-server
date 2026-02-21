@@ -15,13 +15,19 @@ class FastApiMissionClient(
     private val fastApiRestClient: RestClient,
 ) {
     /** M3: 영수증 OCR + 제품 매칭 */
-    fun analyzeReceipt(imageUrl: String, configJson: String): AiJudgmentResult {
+    fun analyzeReceipt(
+        imageUrl: String,
+        configJson: String,
+    ): AiJudgmentResult {
         // TODO: POST /analyze/receipt { imageUrl, configJson }
         throw NotImplementedError("FastAPI 연동 미구현")
     }
 
     /** M4: 재고 이미지 비교 판정 */
-    fun compareInventory(imageUrl: String, configJson: String): AiJudgmentResult {
+    fun compareInventory(
+        imageUrl: String,
+        configJson: String,
+    ): AiJudgmentResult {
         // TODO: POST /analyze/inventory { imageUrl, configJson }
         throw NotImplementedError("FastAPI 연동 미구현")
     }

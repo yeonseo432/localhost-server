@@ -28,19 +28,21 @@ class SecurityConfig(
                 exception.authenticationEntryPoint { _, response, _ ->
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
                 }
-            }
-            .authorizeHttpRequests { auth ->
+            }.authorizeHttpRequests { auth ->
                 auth
                     // 세션 생성(익명 참여 진입점)
-                    .requestMatchers("/api/sessions").permitAll()
+                    .requestMatchers("/api/sessions")
+                    .permitAll()
                     // API 문서
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                    .permitAll()
                     // 매장/미션 조회 (공개)
-                    .requestMatchers("/api/stores/**").permitAll()
+                    .requestMatchers("/api/stores/**")
+                    .permitAll()
                     // 나머지 (미션 시도, 리워드 등)는 세션 토큰 필요
-                    .anyRequest().authenticated()
-            }
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+                    .anyRequest()
+                    .authenticated()
+            }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
 

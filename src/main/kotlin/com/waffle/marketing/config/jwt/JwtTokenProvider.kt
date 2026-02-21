@@ -18,7 +18,8 @@ class JwtTokenProvider(
 
     fun createToken(sessionId: UUID): String {
         val now = Date()
-        return Jwts.builder()
+        return Jwts
+            .builder()
             .subject(sessionId.toString())
             .issuedAt(now)
             .expiration(Date(now.time + expirationInMs))
@@ -37,5 +38,10 @@ class JwtTokenProvider(
         }
 
     private fun parseClaims(token: String): Claims =
-        Jwts.parser().verifyWith(key).build().parseSignedClaims(token).payload
+        Jwts
+            .parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .payload
 }

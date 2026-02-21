@@ -7,7 +7,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 interface MissionAttemptRepository : JpaRepository<MissionAttempt, Long> {
-
     // M2: 가장 최근 PENDING 체크인을 찾아 checkout에 연결
     fun findTopBySessionIdAndMissionIdAndStatusOrderByCreatedAtDesc(
         sessionId: UUID,

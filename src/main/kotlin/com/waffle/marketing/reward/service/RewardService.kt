@@ -18,16 +18,21 @@ class RewardService(
 ) {
     /** 미션 성공 시 리워드 발급. 리워드 ID 반환. */
     @Transactional
-    fun issue(session: Session, mission: MissionDefinition): Long {
+    fun issue(
+        session: Session,
+        mission: MissionDefinition,
+    ): Long {
         val rewardConfig = objectMapper.readTree(mission.rewardJson)
         val type = RewardType.valueOf(rewardConfig["type"].asText())
-        val amountOrCode = when (type) {
-            RewardType.POINT -> rewardConfig["amount"].asText()
-            RewardType.COUPON -> rewardConfig["code"].asText()
-        }
-        val ledger = rewardLedgerRepository.save(
-            RewardLedger(session = session, mission = mission, type = type, amountOrCode = amountOrCode),
-        )
+        val amountOrCode =
+            when (type) {
+                RewardType.POINT -> rewardConfig["amount"].asText()
+                RewardType.COUPON -> rewardConfig["code"].asText()
+            }
+        val ledger =
+            rewardLedgerRepository.save(
+                RewardLedger(session = session, mission = mission, type = type, amountOrCode = amountOrCode),
+            )
         return ledger.id!!
     }
 

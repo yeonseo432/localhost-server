@@ -14,7 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
 ) : OncePerRequestFilter() {
-
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun doFilterInternal(

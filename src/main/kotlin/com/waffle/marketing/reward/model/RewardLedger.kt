@@ -21,25 +21,20 @@ class RewardLedger(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
     val session: Session,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mission_id", nullable = false)
     val mission: MissionDefinition,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     val type: RewardType,
-
     /**
      * POINT인 경우 숫자 문자열 ("100"),
      * COUPON인 경우 쿠폰코드 ("WELCOME2024")
      */
     @Column(nullable = false, length = 100)
     val amountOrCode: String,
-
     @Column(nullable = false)
     val issuedAt: LocalDateTime = LocalDateTime.now(),
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

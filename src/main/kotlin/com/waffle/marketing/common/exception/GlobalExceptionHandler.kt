@@ -18,7 +18,6 @@ data class ErrorResponse(
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleNotFound(e: ResourceNotFoundException): ResponseEntity<ErrorResponse> =
         ResponseEntity.status(HttpStatus.NOT_FOUND).body(

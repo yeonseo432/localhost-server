@@ -11,7 +11,8 @@ class FastApiClientConfig {
     fun fastApiRestClient(
         @Value("\${fastapi.base-url}") baseUrl: String,
     ): RestClient =
-        RestClient.builder()
+        RestClient
+            .builder()
             .baseUrl(baseUrl)
             .build()
 }

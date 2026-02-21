@@ -20,11 +20,9 @@ class MissionDefinition(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     val store: Store,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     val type: MissionType,
-
     /**
      * 미션별 설정 JSON.
      * TIME_WINDOW: {"startHour":15,"endHour":17,"days":["MON","TUE"]}
@@ -35,7 +33,6 @@ class MissionDefinition(
      */
     @Column(nullable = false, columnDefinition = "TEXT")
     val configJson: String,
-
     /**
      * 리워드 설정 JSON.
      * 포인트: {"type":"POINT","amount":100}
@@ -43,10 +40,8 @@ class MissionDefinition(
      */
     @Column(nullable = false, columnDefinition = "TEXT")
     val rewardJson: String,
-
     @Column(nullable = false)
     var isActive: Boolean = true,
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

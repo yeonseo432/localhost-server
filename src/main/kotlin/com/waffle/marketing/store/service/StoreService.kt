@@ -16,7 +16,11 @@ class StoreService(
 
     @Transactional(readOnly = true)
     fun getById(storeId: Long): StoreResponse =
-        storeRepository.findById(storeId).orElse(null).ensureNotNull("매장을 찾을 수 없습니다: $storeId").toResponse()
+        storeRepository
+            .findById(storeId)
+            .orElse(null)
+            .ensureNotNull("매장을 찾을 수 없습니다: $storeId")
+            .toResponse()
 
     private fun Store.toResponse() =
         StoreResponse(

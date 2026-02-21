@@ -12,7 +12,6 @@ import java.util.UUID
 class Session(
     @Id
     val id: UUID = UUID.randomUUID(),
-
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )

@@ -39,8 +39,7 @@ class MissionController(
         @PathVariable missionId: Long,
         @RequestBody @Valid body: VisitMissionRequest,
         auth: Authentication,
-    ): MissionAttemptResponse =
-        missionService.attemptTimeWindow(auth.sessionId(), missionId, body.lat, body.lng)
+    ): MissionAttemptResponse = missionService.attemptTimeWindow(auth.sessionId(), missionId, body.lat, body.lng)
 
     /** M2: 체류 체크인 */
     @Operation(summary = "M2: 체류 체크인")
@@ -49,8 +48,7 @@ class MissionController(
         @PathVariable missionId: Long,
         @RequestBody @Valid body: DwellCheckinRequest,
         auth: Authentication,
-    ): MissionAttemptResponse =
-        missionService.checkin(auth.sessionId(), missionId, body.lat!!, body.lng!!)
+    ): MissionAttemptResponse = missionService.checkin(auth.sessionId(), missionId, body.lat!!, body.lng!!)
 
     /** M2: 체류 체크아웃 */
     @Operation(summary = "M2: 체류 체크아웃")
@@ -59,8 +57,7 @@ class MissionController(
         @PathVariable missionId: Long,
         @RequestBody @Valid body: DwellCheckoutRequest,
         auth: Authentication,
-    ): MissionAttemptResponse =
-        missionService.checkout(auth.sessionId(), missionId, body.lat!!, body.lng!!)
+    ): MissionAttemptResponse = missionService.checkout(auth.sessionId(), missionId, body.lat!!, body.lng!!)
 
     /** M3: 영수증 사진 업로드 */
     @Operation(summary = "M3: 영수증 사진 업로드 및 제품 인증")
@@ -69,8 +66,7 @@ class MissionController(
         @PathVariable missionId: Long,
         @RequestParam("image") image: MultipartFile,
         auth: Authentication,
-    ): MissionAttemptResponse =
-        missionService.attemptReceipt(auth.sessionId(), missionId, image)
+    ): MissionAttemptResponse = missionService.attemptReceipt(auth.sessionId(), missionId, image)
 
     /** M4: 재고 사진 업로드 */
     @Operation(summary = "M4: 재고 상품 사진 촬영 인증")
@@ -79,8 +75,7 @@ class MissionController(
         @PathVariable missionId: Long,
         @RequestParam("image") image: MultipartFile,
         auth: Authentication,
-    ): MissionAttemptResponse =
-        missionService.attemptInventory(auth.sessionId(), missionId, image)
+    ): MissionAttemptResponse = missionService.attemptInventory(auth.sessionId(), missionId, image)
 
     /** M5: 반복 방문 스탬프 */
     @Operation(summary = "M5: 반복 방문 스탬프")
@@ -89,8 +84,7 @@ class MissionController(
         @PathVariable missionId: Long,
         @RequestBody @Valid body: VisitMissionRequest,
         auth: Authentication,
-    ): MissionAttemptResponse =
-        missionService.attemptStamp(auth.sessionId(), missionId, body.lat, body.lng)
+    ): MissionAttemptResponse = missionService.attemptStamp(auth.sessionId(), missionId, body.lat, body.lng)
 
     private fun Authentication.sessionId(): UUID = principal as UUID
 }

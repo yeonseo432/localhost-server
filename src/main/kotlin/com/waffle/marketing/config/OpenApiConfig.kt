@@ -18,8 +18,7 @@ class OpenApiConfig {
                     .title("Waffle Marketing API")
                     .description("미션 리워드 마케팅 서비스 API")
                     .version("v1.0.0"),
-            )
-            .components(
+            ).components(
                 Components()
                     .addSecuritySchemes(
                         securitySchemeName,

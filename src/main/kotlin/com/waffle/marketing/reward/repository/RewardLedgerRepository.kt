@@ -8,5 +8,8 @@ interface RewardLedgerRepository : JpaRepository<RewardLedger, Long> {
     fun findBySessionId(sessionId: UUID): List<RewardLedger>
 
     /** 미션 완료 여부 확인 (중복 시도 방지용) */
-    fun existsBySessionIdAndMissionId(sessionId: UUID, missionId: Long): Boolean
+    fun existsBySessionIdAndMissionId(
+        sessionId: UUID,
+        missionId: Long,
+    ): Boolean
 }

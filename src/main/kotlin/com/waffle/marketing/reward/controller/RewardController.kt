@@ -18,6 +18,5 @@ class RewardController(
 ) {
     @Operation(summary = "내 리워드 목록 조회")
     @GetMapping("/my")
-    fun getMyRewards(auth: Authentication): List<RewardResponse> =
-        rewardService.getMyRewards(auth.principal as UUID)
+    fun getMyRewards(auth: Authentication): List<RewardResponse> = rewardService.getMyRewards(auth.principal as UUID)
 }
