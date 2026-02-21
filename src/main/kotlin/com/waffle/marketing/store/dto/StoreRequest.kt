@@ -14,6 +14,6 @@ data class StoreRequest(
     val detailAddress: String? = null,
     @Schema(description = "사업자번호", example = "123-45-67890")
     val businessNumber: String? = null,
-    @Schema(description = "매장 대표 이미지 URL", example = "https://example.com/store.jpg")
-    val imageUrl: String? = null,
+    @Schema(description = "매장 아이콘 이모지", example = "☕")
+    val iconEmoji: String? = null,
 )

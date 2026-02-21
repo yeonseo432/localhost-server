@@ -41,10 +41,32 @@ class MissionService(
 ) {
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
-    /** 매장 미션 목록 조회 (활성 미션만) */
+    /** 전체 미션 목록 조회. storeId·type 모두 optional. */
     @Transactional(readOnly = true)
-    fun getMissionsByStore(storeId: Long): List<MissionDefinitionResponse> =
-        missionDefinitionRepository.findByStoreIdAndIsActiveTrue(storeId).map { it.toResponse() }
+    fun getAllMissions(storeId: Long?, type: MissionType?): List<MissionDefinitionResponse> {
+        val missions = when {
+            storeId != null && type != null -> missionDefinitionRepository.findByStoreIdAndIsActiveTrueAndType(storeId, type)
+            storeId != null -> missionDefinitionRepository.findByStoreIdAndIsActiveTrue(storeId)
+            type != null -> missionDefinitionRepository.findByIsActiveTrueAndType(type)
+            else -> missionDefinitionRepository.findByIsActiveTrue()
+        }
+        return missions.map { it.toResponse() }
+    }
+
+    /** 매장 미션 목록 조회 (활성 미션만). type 지정 시 해당 타입만 반환. */
+    @Transactional(readOnly = true)
+    fun getMissionsByStore(
+        storeId: Long,
+        type: MissionType?,
+    ): List<MissionDefinitionResponse> {
+        val missions =
+            if (type != null) {
+                missionDefinitionRepository.findByStoreIdAndIsActiveTrueAndType(storeId, type)
+            } else {
+                missionDefinitionRepository.findByStoreIdAndIsActiveTrue(storeId)
+            }
+        return missions.map { it.toResponse() }
+    }
 
     /** 미션 단건 조회 */
     @Transactional(readOnly = true)
@@ -74,14 +96,16 @@ class MissionService(
                 .orElse(null)
                 .ensureNotNull("매장을 찾을 수 없습니다: $storeId")
         if (store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
-        validateConfigJson(request.type, request.configJson)
+        val configJsonStr = request.configJson.toString()
+        validateConfigJson(request.type, configJsonStr)
         val mission =
             missionDefinitionRepository.save(
                 MissionDefinition(
                     store = store,
                     type = request.type,
-                    configJson = request.configJson,
+                    configJson = configJsonStr,
                     rewardAmount = request.rewardAmount,
+                    isActive = request.isActive,
                 ),
             )
         return mission.toResponse()
@@ -102,8 +126,9 @@ class MissionService(
                 .ensureNotNull("미션을 찾을 수 없습니다: $missionId")
         if (mission.store.id != storeId) throw BadRequestException("해당 매장의 미션이 아닙니다")
         if (mission.store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
-        validateConfigJson(mission.type, request.configJson)
-        mission.configJson = request.configJson
+        val configJsonStr = request.configJson.toString()
+        validateConfigJson(mission.type, configJsonStr)
+        mission.configJson = configJsonStr
         mission.rewardAmount = request.rewardAmount
         mission.isActive = request.isActive
         return mission.toResponse()

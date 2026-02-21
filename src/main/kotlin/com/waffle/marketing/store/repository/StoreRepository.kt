@@ -8,4 +8,8 @@ interface StoreRepository : JpaRepository<Store, Long> {
         address: String,
         detailAddress: String?,
     ): Boolean
+
+    fun existsByOwnerId(ownerId: Long): Boolean
+
+    fun findAllByOwnerId(ownerId: Long): List<Store>
 }

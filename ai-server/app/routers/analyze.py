@@ -22,14 +22,15 @@ async def analyze_receipt(
         raise HTTPException(status_code=422, detail="config must be valid JSON")
 
     target_product_key = cfg.get("targetProductKey")
-    confidence_threshold = cfg.get("confidenceThreshold", 0.8)
+    confidence_threshold = cfg.get("confidenceThreshold", 0.7)
 
     if not target_product_key:
         raise HTTPException(status_code=422, detail="targetProductKey is required in config")
 
     image_bytes = await image.read()
+    content_type = image.content_type or "image/jpeg"
 
-    result = llm.analyze_receipt(image_bytes, target_product_key, confidence_threshold)
+    result = llm.analyze_receipt(image_bytes, content_type, target_product_key, confidence_threshold)
     return AnalyzeResponse(**result)
 
 
@@ -45,12 +46,13 @@ async def analyze_inventory(
         raise HTTPException(status_code=422, detail="config must be valid JSON")
 
     answer_image_url = cfg.get("answerImageUrl")
-    confidence_threshold = cfg.get("confidenceThreshold", 0.75)
+    confidence_threshold = cfg.get("confidenceThreshold", 0.7)
 
     if not answer_image_url:
         raise HTTPException(status_code=422, detail="answerImageUrl is required in config")
 
     image_bytes = await image.read()
+    content_type = image.content_type or "image/jpeg"
 
-    result = llm.compare_inventory(image_bytes, answer_image_url, confidence_threshold)
+    result = llm.compare_inventory(image_bytes, content_type, answer_image_url, confidence_threshold)
     return AnalyzeResponse(**result)
