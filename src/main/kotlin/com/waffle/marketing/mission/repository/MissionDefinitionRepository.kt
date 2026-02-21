@@ -11,4 +11,8 @@ interface MissionDefinitionRepository : JpaRepository<MissionDefinition, Long> {
         storeId: Long,
         type: MissionType,
     ): List<MissionDefinition>
+
+    fun findByIsActiveTrue(): List<MissionDefinition>
+
+    fun findByIsActiveTrueAndType(type: MissionType): List<MissionDefinition>
 }

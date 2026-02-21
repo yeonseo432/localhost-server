@@ -3,6 +3,8 @@ package com.waffle.marketing.mission.controller
 import com.waffle.marketing.common.exception.ErrorResponse
 import com.waffle.marketing.mission.dto.MissionAttemptRequest
 import com.waffle.marketing.mission.dto.MissionAttemptResponse
+import com.waffle.marketing.mission.dto.MissionDefinitionResponse
+import com.waffle.marketing.mission.model.MissionType
 import com.waffle.marketing.mission.service.MissionService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -10,12 +12,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "Mission Attempt", description = "미션 판독 및 수행 이력")
@@ -24,6 +28,18 @@ import org.springframework.web.bind.annotation.RestController
 class MissionController(
     private val missionService: MissionService,
 ) {
+    @Operation(
+        summary = "미션 목록 조회",
+        description = "storeId, type 모두 optional. 둘 다 생략하면 전체 활성 미션 반환.\n가능한 type 값: TIME_WINDOW, DWELL, RECEIPT, INVENTORY, STAMP",
+    )
+    @ApiResponse(responseCode = "200", description = "미션 목록 반환")
+    @SecurityRequirements // 공개
+    @GetMapping
+    fun list(
+        @RequestParam(required = false) storeId: Long?,
+        @RequestParam(required = false) type: MissionType?,
+    ): List<MissionDefinitionResponse> = missionService.getAllMissions(storeId, type)
+
     /**
      * 미션 판독 (단일 엔드포인트).
      * - M1(시간대) / M5(스탬프): 빈 바디 또는 {} 전송
