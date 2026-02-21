@@ -60,8 +60,8 @@ pytest tests/ -v
 - `GET /health` — Health check
 
 ### AI Models (Elice Cloud ML API)
-- **Receipt (M3)**: `gpt-5-mini` — text parsing via EasyOCR + LLM
-- **Inventory (M4)**: `gemini-2.5-pro` — vision-based image comparison
+- **Receipt (M3)**: `gemini-2.5-flash` — vision-based receipt product matching
+- **Inventory (M4)**: `gemini-2.5-flash` — vision-based image comparison
 
 ## Integration
 
