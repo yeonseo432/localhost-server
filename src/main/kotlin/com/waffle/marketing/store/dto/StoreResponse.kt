@@ -7,4 +7,7 @@ data class StoreResponse(
     val lng: Double,
     val radiusM: Int,
     val address: String?,
+    val ownerId: Long?,
+    val businessNumber: String?,
+    val imageUrl: String?,
 )

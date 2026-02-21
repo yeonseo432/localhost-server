@@ -4,6 +4,8 @@ import com.waffle.marketing.config.jwt.JwtAuthenticationFilter
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -15,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
@@ -28,21 +31,19 @@ class SecurityConfig(
                 exception.authenticationEntryPoint { _, response, _ ->
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
                 }
-            }.authorizeHttpRequests { auth ->
+            }
+            .authorizeHttpRequests { auth ->
                 auth
-                    // 세션 생성(익명 참여 진입점)
-                    .requestMatchers("/api/sessions")
-                    .permitAll()
+                    // 인증 공개
+                    .requestMatchers("/api/auth/**").permitAll()
                     // API 문서
-                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
-                    .permitAll()
-                    // 매장/미션 조회 (공개)
-                    .requestMatchers("/api/stores/**")
-                    .permitAll()
-                    // 나머지 (미션 시도, 리워드 등)는 세션 토큰 필요
-                    .anyRequest()
-                    .authenticated()
-            }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+                    .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    // 매장·미션 조회 (공개), 쓰기는 @PreAuthorize로 처리
+                    .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll()
+                    // 나머지는 인증 필요
+                    .anyRequest().authenticated()
+            }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
 

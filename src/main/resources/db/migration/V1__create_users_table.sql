@@ -1,7 +1,7 @@
 CREATE TABLE users (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
-    email         VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    username      VARCHAR(12)  NOT NULL UNIQUE,
+    password      VARCHAR(12)  NOT NULL,
     nickname      VARCHAR(50)  NOT NULL,
     role          VARCHAR(10)  NOT NULL DEFAULT 'USER',  -- USER | OWNER
     created_at    DATETIME(6)  NOT NULL,

@@ -13,14 +13,28 @@ import jakarta.persistence.Table
 class Store(
     @Column(nullable = false, length = 100)
     var name: String,
+
     @Column(nullable = false)
     var lat: Double,
+
     @Column(nullable = false)
     var lng: Double,
+
     @Column(nullable = false)
     var radiusM: Int = 100,
+
     @Column(length = 255)
     var address: String? = null,
+
+    @Column
+    var ownerId: Long? = null,
+
+    @Column(length = 20)
+    var businessNumber: String? = null,
+
+    @Column(length = 512)
+    var imageUrl: String? = null,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

@@ -6,7 +6,6 @@ import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.Date
-import java.util.UUID
 import javax.crypto.SecretKey
 
 @Component
@@ -16,18 +15,20 @@ class JwtTokenProvider(
 ) {
     private val key: SecretKey by lazy { Keys.hmacShaKeyFor(secretKey.toByteArray()) }
 
-    fun createToken(sessionId: UUID): String {
+    fun createToken(userId: Long, role: String): String {
         val now = Date()
-        return Jwts
-            .builder()
-            .subject(sessionId.toString())
+        return Jwts.builder()
+            .subject(userId.toString())
+            .claim("role", role)
             .issuedAt(now)
             .expiration(Date(now.time + expirationInMs))
             .signWith(key)
             .compact()
     }
 
-    fun getSessionIdFromToken(token: String): UUID = UUID.fromString(parseClaims(token).subject)
+    fun getUserIdFromToken(token: String): Long = parseClaims(token).subject.toLong()
+
+    fun getRoleFromToken(token: String): String = parseClaims(token).get("role", String::class.java)
 
     fun validateToken(token: String): Boolean =
         try {
@@ -38,10 +39,5 @@ class JwtTokenProvider(
         }
 
     private fun parseClaims(token: String): Claims =
-        Jwts
-            .parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .payload
+        Jwts.parser().verifyWith(key).build().parseSignedClaims(token).payload
 }
