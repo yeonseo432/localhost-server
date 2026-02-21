@@ -1,6 +1,7 @@
 package com.waffle.marketing.store.service
 
 import com.waffle.marketing.common.exception.BadRequestException
+import com.waffle.marketing.common.exception.ResourceForbiddenException
 import com.waffle.marketing.common.extension.ensureNotNull
 import com.waffle.marketing.store.dto.StoreRequest
 import com.waffle.marketing.store.dto.StoreResponse
@@ -48,6 +49,24 @@ class StoreService(
                 ),
             )
         return store.toResponse()
+    }
+
+    @Transactional
+    fun delete(
+        storeId: Long,
+        ownerId: Long,
+    ) {
+        val store =
+            storeRepository
+                .findById(storeId)
+                .orElse(null)
+                .ensureNotNull("매장을 찾을 수 없습니다: $storeId")
+
+        if (store.ownerId != ownerId) {
+            throw ResourceForbiddenException("본인 매장만 삭제할 수 있습니다")
+        }
+
+        storeRepository.delete(store)
     }
 
     private fun Store.toResponse() =
