@@ -1,6 +1,6 @@
-package com.waffle.marketing.auth.repository
+package com.waffle.marketing.user.repository
 
-import com.waffle.marketing.auth.model.User
+import com.waffle.marketing.user.model.User
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.Optional
 

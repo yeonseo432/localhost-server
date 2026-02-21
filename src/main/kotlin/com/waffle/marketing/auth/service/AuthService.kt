@@ -3,11 +3,11 @@ package com.waffle.marketing.auth.service
 import com.waffle.marketing.auth.dto.AuthResponse
 import com.waffle.marketing.auth.dto.LoginRequest
 import com.waffle.marketing.auth.dto.SignupRequest
-import com.waffle.marketing.auth.model.User
-import com.waffle.marketing.auth.repository.UserRepository
 import com.waffle.marketing.common.exception.BadRequestException
 import com.waffle.marketing.common.exception.UnauthorizedException
 import com.waffle.marketing.config.jwt.JwtTokenProvider
+import com.waffle.marketing.user.model.User
+import com.waffle.marketing.user.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -26,7 +26,6 @@ class AuthService(
                 User(
                     username = request.username,
                     password = request.password,
-                    nickname = request.nickname,
                     role = request.role,
                 ),
             )

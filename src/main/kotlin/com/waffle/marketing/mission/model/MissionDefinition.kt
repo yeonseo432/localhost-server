@@ -33,13 +33,9 @@ class MissionDefinition(
      */
     @Column(nullable = false, columnDefinition = "TEXT")
     val configJson: String,
-    /**
-     * 리워드 설정 JSON.
-     * 포인트: {"type":"POINT","amount":100}
-     * 쿠폰:   {"type":"COUPON","code":"WELCOME2024"}
-     */
-    @Column(nullable = false, columnDefinition = "TEXT")
-    val rewardJson: String,
+    /** 미션 성공 시 지급할 포인트 */
+    @Column(nullable = false)
+    val rewardAmount: Int,
     @Column(nullable = false)
     var isActive: Boolean = true,
     @Id

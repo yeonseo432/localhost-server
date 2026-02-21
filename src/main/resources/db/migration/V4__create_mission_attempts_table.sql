@@ -10,15 +10,9 @@ CREATE TABLE mission_attempts (
     -- M3/M4: 업로드된 원본 이미지 URL (재촬영/운영 검토용)
     image_url      VARCHAR(512),
 
-    -- M2: 체류 GPS 체크인
+    -- M2: 체류 체크인/체크아웃 시간
     checkin_at     DATETIME(6),
-    checkin_lat    DOUBLE,
-    checkin_lng    DOUBLE,
-
-    -- M2: 체류 GPS 체크아웃
     checkout_at    DATETIME(6),
-    checkout_lat   DOUBLE,
-    checkout_lng   DOUBLE,
 
     -- M3/M4: FastAPI AI 판정 결과
     ai_result_json TEXT,

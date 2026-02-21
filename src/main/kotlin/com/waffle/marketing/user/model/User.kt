@@ -1,4 +1,4 @@
-package com.waffle.marketing.auth.model
+package com.waffle.marketing.user.model
 
 import com.waffle.marketing.common.model.BaseEntity
 import jakarta.persistence.Column
@@ -17,8 +17,8 @@ class User(
     val username: String,
     @Column(nullable = false, length = 12)
     var password: String,
-    @Column(nullable = false, length = 50)
-    var nickname: String,
+    @Column(nullable = false)
+    var point: Int = 0,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     val role: UserRole = UserRole.USER,
