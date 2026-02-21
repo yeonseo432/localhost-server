@@ -21,4 +21,4 @@ fastapi:
 
 jwt:
   secret: ${JWT_SECRET:marketing-jwt-secret-key-must-be-at-least-32-bytes-long}
-  expiration-in-ms: 604800000  # 7일
+  expiration-in-ms: 86400000  # 24시간 (프로필별로 재정의)
