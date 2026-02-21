@@ -19,6 +19,10 @@ class StoreService(
     fun getAll(): List<StoreResponse> = storeRepository.findAll().map { it.toResponse() }
 
     @Transactional(readOnly = true)
+    fun getMyStores(ownerId: Long): List<StoreResponse> =
+        storeRepository.findAllByOwnerId(ownerId).map { it.toResponse() }
+
+    @Transactional(readOnly = true)
     fun getById(storeId: Long): StoreResponse =
         storeRepository
             .findById(storeId)

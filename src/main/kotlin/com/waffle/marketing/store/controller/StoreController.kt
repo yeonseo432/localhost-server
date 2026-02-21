@@ -52,6 +52,14 @@ class StoreController(
         @PathVariable storeId: Long,
     ): StoreResponse = storeService.getById(storeId)
 
+    @Operation(summary = "내 매장 목록 조회", description = "로그인한 OWNER의 매장 목록을 반환합니다.")
+    @ApiResponse(responseCode = "200", description = "내 매장 목록 반환")
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('OWNER')")
+    fun getMy(
+        @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
+    ): List<StoreResponse> = storeService.getMyStores(ownerId)
+
     @Operation(summary = "매장 등록", description = "OWNER 계정으로 로그인 후 Bearer 토큰을 입력해야 합니다.")
     @ApiResponses(
         ApiResponse(responseCode = "201", description = "매장 등록 성공"),
