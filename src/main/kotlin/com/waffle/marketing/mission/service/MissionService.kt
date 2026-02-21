@@ -37,14 +37,24 @@ class MissionService(
     private val storeRepository: StoreRepository,
     private val s3ImageServiceProvider: ObjectProvider<S3ImageService>,
     private val objectMapper: ObjectMapper,
-    // private val fastApiMissionClient: FastApiMissionClient, // TODO: FastAPI 연동 시 활성화
+    private val fastApiMissionClient: FastApiMissionClient,
 ) {
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
-    /** 매장 미션 목록 조회 (활성 미션만) */
+    /** 매장 미션 목록 조회 (활성 미션만). type 지정 시 해당 타입만 반환. */
     @Transactional(readOnly = true)
-    fun getMissionsByStore(storeId: Long): List<MissionDefinitionResponse> =
-        missionDefinitionRepository.findByStoreIdAndIsActiveTrue(storeId).map { it.toResponse() }
+    fun getMissionsByStore(
+        storeId: Long,
+        type: MissionType?,
+    ): List<MissionDefinitionResponse> {
+        val missions =
+            if (type != null) {
+                missionDefinitionRepository.findByStoreIdAndIsActiveTrueAndType(storeId, type)
+            } else {
+                missionDefinitionRepository.findByStoreIdAndIsActiveTrue(storeId)
+            }
+        return missions.map { it.toResponse() }
+    }
 
     /** 미션 단건 조회 */
     @Transactional(readOnly = true)
@@ -74,14 +84,16 @@ class MissionService(
                 .orElse(null)
                 .ensureNotNull("매장을 찾을 수 없습니다: $storeId")
         if (store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
-        validateConfigJson(request.type, request.configJson)
+        val configJsonStr = request.configJson.toString()
+        validateConfigJson(request.type, configJsonStr)
         val mission =
             missionDefinitionRepository.save(
                 MissionDefinition(
                     store = store,
                     type = request.type,
-                    configJson = request.configJson,
+                    configJson = configJsonStr,
                     rewardAmount = request.rewardAmount,
+                    isActive = request.isActive,
                 ),
             )
         return mission.toResponse()
@@ -102,8 +114,9 @@ class MissionService(
                 .ensureNotNull("미션을 찾을 수 없습니다: $missionId")
         if (mission.store.id != storeId) throw BadRequestException("해당 매장의 미션이 아닙니다")
         if (mission.store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
-        validateConfigJson(mission.type, request.configJson)
-        mission.configJson = request.configJson
+        val configJsonStr = request.configJson.toString()
+        validateConfigJson(mission.type, configJsonStr)
+        mission.configJson = configJsonStr
         mission.rewardAmount = request.rewardAmount
         mission.isActive = request.isActive
         return mission.toResponse()
@@ -300,10 +313,8 @@ class MissionService(
         imageUrl: String?,
     ): MissionAttemptResponse {
         val url = imageUrl ?: throw BadRequestException("M3 영수증 미션은 imageUrl이 필요합니다")
-        // TODO: FastAPI AI 영수증 판독 연동
-        // val aiResult = fastApiMissionClient.analyzeReceipt(url, mission.configJson)
-        // val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
-        val status = AttemptStatus.PENDING // 임시: AI 미연동 상태
+        val aiResult = fastApiMissionClient.analyzeReceipt(url, mission.configJson)
+        val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
                 MissionAttempt(
@@ -311,11 +322,11 @@ class MissionService(
                     missionId = missionId,
                     status = status,
                     imageUrl = url,
-                    // aiResultJson = aiResult.rawJson,
+                    aiResultJson = aiResult.rawJson,
                 ),
             )
-        // val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
-        return attempt.toResponse(retryHint = "AI 판독 연동 준비 중입니다")
+        val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
+        return attempt.toResponse(retryHint = aiResult.retryHint, rewardId = rewardId)
     }
 
     /** M4: 재고 이미지 AI 비교 판독 */
@@ -326,10 +337,8 @@ class MissionService(
         imageUrl: String?,
     ): MissionAttemptResponse {
         val url = imageUrl ?: throw BadRequestException("M4 재고 미션은 imageUrl이 필요합니다")
-        // TODO: FastAPI AI 재고 이미지 비교 연동
-        // val aiResult = fastApiMissionClient.compareInventory(url, mission.configJson)
-        // val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
-        val status = AttemptStatus.PENDING // 임시: AI 미연동 상태
+        val aiResult = fastApiMissionClient.compareInventory(url, mission.configJson)
+        val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
                 MissionAttempt(
@@ -337,11 +346,11 @@ class MissionService(
                     missionId = missionId,
                     status = status,
                     imageUrl = url,
-                    // aiResultJson = aiResult.rawJson,
+                    aiResultJson = aiResult.rawJson,
                 ),
             )
-        // val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
-        return attempt.toResponse(retryHint = "AI 판독 연동 준비 중입니다")
+        val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
+        return attempt.toResponse(retryHint = aiResult.retryHint, rewardId = rewardId)
     }
 
     /** M5: 반복 방문 스탬프 */

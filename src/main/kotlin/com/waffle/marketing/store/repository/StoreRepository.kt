@@ -10,4 +10,6 @@ interface StoreRepository : JpaRepository<Store, Long> {
     ): Boolean
 
     fun existsByOwnerId(ownerId: Long): Boolean
+
+    fun findAllByOwnerId(ownerId: Long): List<Store>
 }
