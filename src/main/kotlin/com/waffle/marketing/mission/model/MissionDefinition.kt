@@ -32,10 +32,10 @@ class MissionDefinition(
      * STAMP:       {"requiredCount":3}
      */
     @Column(nullable = false, columnDefinition = "TEXT")
-    val configJson: String,
+    var configJson: String,
     /** 미션 성공 시 지급할 포인트 */
     @Column(nullable = false)
-    val rewardAmount: Int,
+    var rewardAmount: Int,
     @Column(nullable = false)
     var isActive: Boolean = true,
     @Id
