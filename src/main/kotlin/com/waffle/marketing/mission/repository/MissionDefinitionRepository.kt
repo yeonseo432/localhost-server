@@ -7,5 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface MissionDefinitionRepository : JpaRepository<MissionDefinition, Long> {
     fun findByStoreIdAndIsActiveTrue(storeId: Long): List<MissionDefinition>
 
-    fun findByStoreIdAndIsActiveTrueAndType(storeId: Long, type: MissionType): List<MissionDefinition>
+    fun findByStoreIdAndIsActiveTrueAndType(
+        storeId: Long,
+        type: MissionType,
+    ): List<MissionDefinition>
 }
