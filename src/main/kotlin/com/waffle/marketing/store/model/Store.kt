@@ -26,7 +26,7 @@ class Store(
     @Column(length = 20)
     var businessNumber: String? = null,
     @Column(length = 512)
-    var imageUrl: String? = null,
+    var iconEmoji: String? = null,
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

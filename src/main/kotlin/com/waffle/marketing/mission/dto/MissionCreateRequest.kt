@@ -25,4 +25,6 @@ data class MissionCreateRequest(
     @field:NotNull
     @field:Min(0)
     val rewardAmount: Int,
+    @Schema(description = "미션 활성화 여부 (생략 시 true)", example = "true")
+    val isActive: Boolean = true,
 )

@@ -90,6 +90,7 @@ class MissionService(
                     type = request.type,
                     configJson = configJsonStr,
                     rewardAmount = request.rewardAmount,
+                    isActive = request.isActive,
                 ),
             )
         return mission.toResponse()

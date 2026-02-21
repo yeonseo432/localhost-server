@@ -71,7 +71,7 @@ class StoreService(
                     lng = geoPoint.lng,
                     ownerId = ownerId,
                     businessNumber = request.businessNumber,
-                    imageUrl = request.imageUrl,
+                    iconEmoji = request.iconEmoji,
                 ),
             )
         return store.toResponse()
@@ -120,6 +120,6 @@ class StoreService(
             lng = lng,
             ownerId = ownerId,
             businessNumber = businessNumber,
-            imageUrl = imageUrl,
+            iconEmoji = iconEmoji,
         )
 }

@@ -9,5 +9,5 @@ data class StoreResponse(
     val lng: Double,
     val ownerId: Long?,
     val businessNumber: String?,
-    val imageUrl: String?,
+    val iconEmoji: String?,
 )
