@@ -43,13 +43,17 @@ class MissionService(
 
     /** 전체 미션 목록 조회. storeId·type 모두 optional. */
     @Transactional(readOnly = true)
-    fun getAllMissions(storeId: Long?, type: MissionType?): List<MissionDefinitionResponse> {
-        val missions = when {
-            storeId != null && type != null -> missionDefinitionRepository.findByStoreIdAndIsActiveTrueAndType(storeId, type)
-            storeId != null -> missionDefinitionRepository.findByStoreIdAndIsActiveTrue(storeId)
-            type != null -> missionDefinitionRepository.findByIsActiveTrueAndType(type)
-            else -> missionDefinitionRepository.findByIsActiveTrue()
-        }
+    fun getAllMissions(
+        storeId: Long?,
+        type: MissionType?,
+    ): List<MissionDefinitionResponse> {
+        val missions =
+            when {
+                storeId != null && type != null -> missionDefinitionRepository.findByStoreIdAndIsActiveTrueAndType(storeId, type)
+                storeId != null -> missionDefinitionRepository.findByStoreIdAndIsActiveTrue(storeId)
+                type != null -> missionDefinitionRepository.findByIsActiveTrueAndType(type)
+                else -> missionDefinitionRepository.findByIsActiveTrue()
+            }
         return missions.map { it.toResponse() }
     }
 
