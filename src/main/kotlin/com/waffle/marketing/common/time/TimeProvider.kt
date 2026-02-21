@@ -10,11 +10,13 @@ private val KST = ZoneId.of("Asia/Seoul")
 
 interface TimeProvider {
     fun now(): LocalDateTime
+
     fun today(): LocalDate
 }
 
 @Component
 class SystemTimeProvider : TimeProvider {
     override fun now(): LocalDateTime = ZonedDateTime.now(KST).toLocalDateTime()
+
     override fun today(): LocalDate = ZonedDateTime.now(KST).toLocalDate()
 }
