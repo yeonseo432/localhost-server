@@ -189,7 +189,12 @@ class EliceAiClient(
                     .retrieve()
                     .toEntity(ByteArray::class.java)
 
-            val contentType = response.headers.contentType?.toString()?.split(";")?.get(0)?.trim() ?: "image/jpeg"
+            val contentType =
+                response.headers.contentType
+                    ?.toString()
+                    ?.split(";")
+                    ?.get(0)
+                    ?.trim() ?: "image/jpeg"
             val b64 = Base64.getEncoder().encodeToString(response.body!!)
             return "data:$contentType;base64,$b64"
         } catch (e: RestClientException) {
@@ -205,7 +210,8 @@ class EliceAiClient(
                 "IMPORTANT RULES:\n" +
                 "- Read every line of the receipt image carefully.\n" +
                 "- Match by CHARACTER SHAPE SIMILARITY ONLY. Do NOT consider semantic meaning or product categories.\n" +
-                "- For example, '돌체라떼' and '돌채라떼' are similar (printing artifacts), but '바리스타' and '돌체라떼' are NOT similar even though both are coffee-related.\n" +
+                "- For example, '돌체라떼' and '돌채라떼' are similar (printing artifacts), " +
+                "but '바리스타' and '돌체라떼' are NOT similar even though both are coffee-related.\n" +
                 "- NEVER increase confidence based on semantic similarity (same category, related meaning, etc.).\n" +
                 "- Only match when the actual characters closely resemble the target product name.\n" +
                 "- IGNORE whitespace differences: '코카콜라' and '코카 콜라', '돌체라떼' and '돌체 라떼' should be treated as the same product.\n" +
@@ -219,9 +225,11 @@ class EliceAiClient(
                 "and determine if they show the SAME product.\n" +
                 "IMPORTANT RULES:\n" +
                 "- Judge by PRODUCT IDENTITY: same brand, same product name, same packaging design.\n" +
-                "- Different flavors, sizes, or variants of the same brand are DIFFERENT products (e.g., Coca-Cola Original vs Coca-Cola Zero are different).\n" +
+                "- Different flavors, sizes, or variants of the same brand are DIFFERENT products " +
+                "(e.g., Coca-Cola Original vs Coca-Cola Zero are different).\n" +
                 "- IGNORE differences caused by shooting angle, lighting, background, or image quality.\n" +
-                "- If the user's photo is too blurry, too dark, or the product is not clearly visible, set match to false and provide a helpful retryHint IN KOREAN.\n" +
+                "- If the user's photo is too blurry, too dark, or the product is not clearly visible, " +
+                "set match to false and provide a helpful retryHint IN KOREAN.\n" +
                 "- The retryHint must always be in Korean (e.g., '제품이 잘 보이도록 다시 촬영해주세요.').\n" +
                 "Respond ONLY with a JSON object: " +
                 """{"match": true/false, "confidence": 0.0-1.0, "retryHint": "string or null", "reason": "brief explanation"}"""

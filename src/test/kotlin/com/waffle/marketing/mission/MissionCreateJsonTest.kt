@@ -1,17 +1,19 @@
 package com.waffle.marketing.mission
 
 import org.junit.jupiter.api.Test
-import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 import tools.jackson.module.kotlin.kotlinModule
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MissionCreateJsonTest {
-    private val objectMapper = ObjectMapper.builder()
-        .addModule(kotlinModule())
-        .build()
+    private val objectMapper =
+        ObjectMapper
+            .builder()
+            .addModule(kotlinModule())
+            .build()
 
     data class TestCreateRequest(
         val type: String,
@@ -22,13 +24,14 @@ class MissionCreateJsonTest {
 
     @Test
     fun `M4 INVENTORY configJson toString produces valid JSON`() {
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "type": "INVENTORY",
                 "configJson": {"answerImageUrl": "https://bucket.s3.ap-southeast-2.amazonaws.com/stores/1/inventory/abc123"},
                 "rewardAmount": 1000
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val request = objectMapper.readValue(requestBody, TestCreateRequest::class.java)
 
@@ -51,13 +54,14 @@ class MissionCreateJsonTest {
 
     @Test
     fun `M3 RECEIPT works for comparison`() {
-        val requestBody = """
+        val requestBody =
+            """
             {
                 "type": "RECEIPT",
                 "configJson": {"targetProductKey": "아메리카노"},
                 "rewardAmount": 100
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val request = objectMapper.readValue(requestBody, TestCreateRequest::class.java)
         val configJsonStr = request.configJson.toString()
