@@ -5,6 +5,7 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.util.LinkedMultiValueMap
+import org.springframework.web.client.RestClient
 
 data class AiJudgmentResult(
     val match: Boolean,
