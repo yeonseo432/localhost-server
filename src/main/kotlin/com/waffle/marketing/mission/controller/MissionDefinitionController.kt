@@ -1,9 +1,12 @@
 package com.waffle.marketing.mission.controller
 
 import com.waffle.marketing.common.exception.ErrorResponse
+import com.waffle.marketing.mission.dto.ImageConfirmRequest
 import com.waffle.marketing.mission.dto.MissionCreateRequest
 import com.waffle.marketing.mission.dto.MissionDefinitionResponse
 import com.waffle.marketing.mission.dto.MissionUpdateRequest
+import com.waffle.marketing.mission.dto.PresignedUrlRequest
+import com.waffle.marketing.mission.dto.PresignedUrlResponse
 import com.waffle.marketing.mission.service.MissionService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -97,6 +100,58 @@ class MissionDefinitionController(
         @Valid @RequestBody request: MissionUpdateRequest,
         @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
     ): MissionDefinitionResponse = missionService.updateMission(storeId, missionId, request, ownerId)
+
+    @Operation(
+        summary = "INVENTORY 답안 이미지 업로드 URL 발급",
+        description = "OWNER 전용. 응답의 presignedUrl로 프론트에서 직접 S3 PUT 요청해 이미지를 업로드한 뒤 /image/confirm을 호출한다. (10분 유효)",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "presigned URL 반환"),
+        ApiResponse(
+            responseCode = "400",
+            description = "INVENTORY 미션이 아님",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+        ApiResponse(
+            responseCode = "403",
+            description = "OWNER 권한 없음 또는 본인 매장 아님",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+    )
+    @PostMapping("/{missionId}/image/presigned-url")
+    @PreAuthorize("hasRole('OWNER')")
+    fun getPresignedUrl(
+        @PathVariable storeId: Long,
+        @PathVariable missionId: Long,
+        @Valid @RequestBody request: PresignedUrlRequest,
+        @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
+    ): PresignedUrlResponse = missionService.generateAnswerImagePresignedUrl(storeId, missionId, ownerId, request.contentType)
+
+    @Operation(
+        summary = "INVENTORY 답안 이미지 업로드 확인",
+        description = "OWNER 전용. 프론트가 S3 업로드 완료 후 호출. 기존 이미지는 S3에서 자동 삭제되고 configJson.answerImageUrl이 갱신된다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "갱신된 미션 반환"),
+        ApiResponse(
+            responseCode = "400",
+            description = "INVENTORY 미션이 아님",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+        ApiResponse(
+            responseCode = "403",
+            description = "OWNER 권한 없음 또는 본인 매장 아님",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+    )
+    @PutMapping("/{missionId}/image/confirm")
+    @PreAuthorize("hasRole('OWNER')")
+    fun confirmImageUpload(
+        @PathVariable storeId: Long,
+        @PathVariable missionId: Long,
+        @Valid @RequestBody request: ImageConfirmRequest,
+        @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
+    ): MissionDefinitionResponse = missionService.confirmAnswerImageUpload(storeId, missionId, ownerId, request.imageUrl)
 
     @Operation(summary = "미션 삭제", description = "OWNER 전용. 소프트 삭제(isActive=false)로 처리됩니다.")
     @ApiResponses(
