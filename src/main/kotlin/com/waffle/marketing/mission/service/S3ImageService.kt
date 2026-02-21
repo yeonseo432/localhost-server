@@ -48,6 +48,33 @@ class S3ImageService(
         return presignedUrl to imageUrl
     }
 
+    /**
+     * 매장 INVENTORY 답안 이미지용 presigned PUT URL (미션 생성 전, missionId 불필요).
+     * S3 경로: stores/{storeId}/inventory/{UUID}
+     */
+    fun generateStorePresignedPutUrl(
+        storeId: Long,
+        contentType: String,
+    ): Pair<String, String> {
+        val objectKey = "stores/$storeId/inventory/${UUID.randomUUID()}"
+        val putObjectRequest =
+            PutObjectRequest
+                .builder()
+                .bucket(bucket)
+                .key(objectKey)
+                .contentType(contentType)
+                .build()
+        val presignRequest =
+            PutObjectPresignRequest
+                .builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(putObjectRequest)
+                .build()
+        val presignedUrl = s3Presigner.presignPutObject(presignRequest).url().toString()
+        val imageUrl = "$bucketBaseUrl/$objectKey"
+        return presignedUrl to imageUrl
+    }
+
     /** 주어진 URL이 이 버킷 소속이면 S3에서 삭제. 다른 출처면 무시. */
     fun deleteIfOurs(imageUrl: String) {
         if (!imageUrl.startsWith(bucketBaseUrl)) return

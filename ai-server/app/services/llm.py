@@ -116,6 +116,16 @@ def analyze_receipt(image_bytes: bytes, target_product_key: str, confidence_thre
     }
 
 
+def _download_image_as_base64(url: str) -> str:
+    """Download an image from a URL and return it as a base64-encoded data URI."""
+    with httpx.Client(timeout=30.0) as client:
+        resp = client.get(url)
+        resp.raise_for_status()
+    content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0].strip()
+    b64 = base64.b64encode(resp.content).decode("utf-8")
+    return f"data:{content_type};base64,{b64}"
+
+
 def compare_inventory(
     image_bytes: bytes,
     answer_image_url: str,
@@ -123,6 +133,7 @@ def compare_inventory(
 ) -> dict:
     """Use Gemini 2.5 Pro (Vision) to compare user photo with reference image."""
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
+    answer_b64_uri = _download_image_as_base64(answer_image_url)
 
     user_content = [
         {
@@ -140,7 +151,7 @@ def compare_inventory(
         },
         {
             "type": "image_url",
-            "image_url": {"url": answer_image_url},
+            "image_url": {"url": answer_b64_uri},
         },
     ]
 
