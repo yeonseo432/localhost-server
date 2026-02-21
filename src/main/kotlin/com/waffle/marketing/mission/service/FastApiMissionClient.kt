@@ -1,5 +1,6 @@
 package com.waffle.marketing.mission.service
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 
@@ -12,7 +13,7 @@ data class AiJudgmentResult(
 
 @Component
 class FastApiMissionClient(
-    private val fastApiRestClient: RestClient,
+    @Qualifier("fastApiRestClient") private val fastApiRestClient: RestClient,
 ) {
     /** M3: 영수증 OCR + 제품 매칭 */
     fun analyzeReceipt(
