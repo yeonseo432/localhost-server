@@ -1,0 +1,26 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST}
+      port: ${SPRING_REDIS_PORT}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-in-ms: 86400000
+
+fastapi:
+  base-url: ${FASTAPI_BASE_URL}
+
+server:
+  port: 8080
