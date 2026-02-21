@@ -1,5 +1,6 @@
 package com.waffle.marketing.store.service
 
+import com.waffle.marketing.common.exception.BadRequestException
 import com.waffle.marketing.common.extension.ensureNotNull
 import com.waffle.marketing.store.dto.StoreRequest
 import com.waffle.marketing.store.dto.StoreResponse
@@ -29,6 +30,9 @@ class StoreService(
         request: StoreRequest,
         ownerId: Long,
     ): StoreResponse {
+        if (storeRepository.existsByAddressAndDetailAddress(request.address, request.detailAddress)) {
+            throw BadRequestException("이미 등록된 주소입니다: ${request.address} ${request.detailAddress ?: ""}".trim())
+        }
         val geoPoint = kakaoGeocodingClient.geocode(request.address)
         val store =
             storeRepository.save(
