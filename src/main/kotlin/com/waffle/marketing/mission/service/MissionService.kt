@@ -37,7 +37,7 @@ class MissionService(
     private val storeRepository: StoreRepository,
     private val s3ImageServiceProvider: ObjectProvider<S3ImageService>,
     private val objectMapper: ObjectMapper,
-    // private val fastApiMissionClient: FastApiMissionClient, // TODO: FastAPI 연동 시 활성화
+    private val fastApiMissionClient: FastApiMissionClient,
 ) {
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
@@ -300,10 +300,8 @@ class MissionService(
         imageUrl: String?,
     ): MissionAttemptResponse {
         val url = imageUrl ?: throw BadRequestException("M3 영수증 미션은 imageUrl이 필요합니다")
-        // TODO: FastAPI AI 영수증 판독 연동
-        // val aiResult = fastApiMissionClient.analyzeReceipt(url, mission.configJson)
-        // val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
-        val status = AttemptStatus.PENDING // 임시: AI 미연동 상태
+        val aiResult = fastApiMissionClient.analyzeReceipt(url, mission.configJson)
+        val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
                 MissionAttempt(
@@ -311,11 +309,11 @@ class MissionService(
                     missionId = missionId,
                     status = status,
                     imageUrl = url,
-                    // aiResultJson = aiResult.rawJson,
+                    aiResultJson = aiResult.rawJson,
                 ),
             )
-        // val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
-        return attempt.toResponse(retryHint = "AI 판독 연동 준비 중입니다")
+        val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
+        return attempt.toResponse(retryHint = aiResult.retryHint, rewardId = rewardId)
     }
 
     /** M4: 재고 이미지 AI 비교 판독 */
@@ -326,10 +324,8 @@ class MissionService(
         imageUrl: String?,
     ): MissionAttemptResponse {
         val url = imageUrl ?: throw BadRequestException("M4 재고 미션은 imageUrl이 필요합니다")
-        // TODO: FastAPI AI 재고 이미지 비교 연동
-        // val aiResult = fastApiMissionClient.compareInventory(url, mission.configJson)
-        // val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
-        val status = AttemptStatus.PENDING // 임시: AI 미연동 상태
+        val aiResult = fastApiMissionClient.compareInventory(url, mission.configJson)
+        val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
                 MissionAttempt(
@@ -337,11 +333,11 @@ class MissionService(
                     missionId = missionId,
                     status = status,
                     imageUrl = url,
-                    // aiResultJson = aiResult.rawJson,
+                    aiResultJson = aiResult.rawJson,
                 ),
             )
-        // val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
-        return attempt.toResponse(retryHint = "AI 판독 연동 준비 중입니다")
+        val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
+        return attempt.toResponse(retryHint = aiResult.retryHint, rewardId = rewardId)
     }
 
     /** M5: 반복 방문 스탬프 */
