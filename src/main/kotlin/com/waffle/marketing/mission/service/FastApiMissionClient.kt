@@ -1,11 +1,13 @@
 package com.waffle.marketing.mission.service
 
+import com.waffle.marketing.common.exception.ExternalApiException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.RestClientException
 
 data class AiJudgmentResult(
     val match: Boolean,
@@ -25,13 +27,17 @@ class FastApiMissionClient(
     ): AiJudgmentResult {
         val body = buildMultipartBody(imageBytes, "receipt.jpg", configJson)
 
-        return fastApiRestClient
-            .post()
-            .uri("/analyze/receipt")
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(body)
-            .retrieve()
-            .body(AiJudgmentResult::class.java)!!
+        try {
+            return fastApiRestClient
+                .post()
+                .uri("/analyze/receipt")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(body)
+                .retrieve()
+                .body(AiJudgmentResult::class.java)!!
+        } catch (e: RestClientException) {
+            throw ExternalApiException("AI 서버 호출 실패 (영수증 분석): ${e.message}")
+        }
     }
 
     /** M4: 재고 이미지 비교 판정 — 이미지 바이트를 직접 FastAPI에 multipart 전송 */
@@ -41,13 +47,17 @@ class FastApiMissionClient(
     ): AiJudgmentResult {
         val body = buildMultipartBody(imageBytes, "inventory.jpg", configJson)
 
-        return fastApiRestClient
-            .post()
-            .uri("/analyze/inventory")
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(body)
-            .retrieve()
-            .body(AiJudgmentResult::class.java)!!
+        try {
+            return fastApiRestClient
+                .post()
+                .uri("/analyze/inventory")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(body)
+                .retrieve()
+                .body(AiJudgmentResult::class.java)!!
+        } catch (e: RestClientException) {
+            throw ExternalApiException("AI 서버 호출 실패 (재고 비교): ${e.message}")
+        }
     }
 
     private fun buildMultipartBody(

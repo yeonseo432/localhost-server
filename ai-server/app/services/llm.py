@@ -18,6 +18,7 @@ _RECEIPT_SYSTEM_PROMPT = (
     "- For example, '돌체라떼' and '돌채라떼' are similar (printing artifacts), but '바리스타' and '돌체라떼' are NOT similar even though both are coffee-related.\n"
     "- NEVER increase confidence based on semantic similarity (same category, related meaning, etc.).\n"
     "- Only match when the actual characters closely resemble the target product name.\n"
+    "- IGNORE whitespace differences: '코카콜라' and '코카 콜라', '돌체라떼' and '돌체 라떼' should be treated as the same product.\n"
     "- If the image is too blurry or unreadable, set match to false and provide a helpful retryHint.\n"
     "Respond ONLY with a JSON object: "
     '{"match": true/false, "confidence": 0.0-1.0, "retryHint": "string or null", "reason": "brief explanation"}'
