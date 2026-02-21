@@ -92,9 +92,7 @@ class MissionService(
         image: MultipartFile,
     ): MissionAttemptResponse {
         val mission = resolveAndGuard(userId, missionId)
-        // TODO: S3 업로드 후 imageUrl 획득
-        val imageUrl = "TODO_S3_URL"
-        val aiResult = fastApiMissionClient.analyzeReceipt(imageUrl, mission.configJson)
+        val aiResult = fastApiMissionClient.analyzeReceipt(image, mission.configJson)
         val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
@@ -102,7 +100,7 @@ class MissionService(
                     userId = userId,
                     missionId = missionId,
                     status = status,
-                    imageUrl = imageUrl,
+                    imageUrl = null,
                     aiResultJson = aiResult.rawJson,
                 ),
             )
