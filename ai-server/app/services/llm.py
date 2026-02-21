@@ -75,7 +75,7 @@ def _parse_ai_json(raw_content: str) -> dict:
     return json.loads(text)
 
 
-def analyze_receipt(image_bytes: bytes, target_product_key: str, confidence_threshold: float) -> dict:
+def analyze_receipt(image_bytes: bytes, content_type: str, target_product_key: str, confidence_threshold: float) -> dict:
     """Use Gemini 2.5 Pro Vision to determine if the target product appears in a receipt image."""
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
 
@@ -90,7 +90,7 @@ def analyze_receipt(image_bytes: bytes, target_product_key: str, confidence_thre
         },
         {
             "type": "image_url",
-            "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"},
+            "image_url": {"url": f"data:{content_type};base64,{b64_image}"},
         },
     ]
 
@@ -108,10 +108,13 @@ def analyze_receipt(image_bytes: bytes, target_product_key: str, confidence_thre
         logger.warning("Failed to parse AI response: %s", raw_content)
         parsed = {"match": False, "confidence": 0.0, "retryHint": "AI 응답을 파싱할 수 없습니다. 다시 시도해주세요."}
 
+    confidence = parsed.get("confidence", 0.0)
+    match = parsed.get("match", False) and confidence >= confidence_threshold
+
     return {
-        "match": parsed.get("match", False),
-        "confidence": parsed.get("confidence", 0.0),
-        "retryHint": parsed.get("retryHint"),
+        "match": match,
+        "confidence": confidence,
+        "retryHint": parsed.get("retryHint") if match else (parsed.get("retryHint") or "신뢰도가 기준에 미달합니다. 더 선명한 사진으로 다시 시도해주세요."),
         "rawJson": json.dumps(parsed, ensure_ascii=False),
     }
 
@@ -128,6 +131,7 @@ def _download_image_as_base64(url: str) -> str:
 
 def compare_inventory(
     image_bytes: bytes,
+    content_type: str,
     answer_image_url: str,
     confidence_threshold: float,
 ) -> dict:
@@ -147,7 +151,7 @@ def compare_inventory(
         },
         {
             "type": "image_url",
-            "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"},
+            "image_url": {"url": f"data:{content_type};base64,{b64_image}"},
         },
         {
             "type": "image_url",
@@ -169,9 +173,12 @@ def compare_inventory(
         logger.warning("Failed to parse AI response: %s", raw_content)
         parsed = {"match": False, "confidence": 0.0, "retryHint": "AI 응답을 파싱할 수 없습니다. 다시 시도해주세요."}
 
+    confidence = parsed.get("confidence", 0.0)
+    match = parsed.get("match", False) and confidence >= confidence_threshold
+
     return {
-        "match": parsed.get("match", False),
-        "confidence": parsed.get("confidence", 0.0),
-        "retryHint": parsed.get("retryHint"),
+        "match": match,
+        "confidence": confidence,
+        "retryHint": parsed.get("retryHint") if match else (parsed.get("retryHint") or "신뢰도가 기준에 미달합니다. 더 선명한 사진으로 다시 시도해주세요."),
         "rawJson": json.dumps(parsed, ensure_ascii=False),
     }
