@@ -1,6 +1,6 @@
 CREATE TABLE mission_attempts (
     id             BIGINT AUTO_INCREMENT PRIMARY KEY,
-    session_id     CHAR(36)     NOT NULL,
+    user_id        BIGINT       NOT NULL,
     mission_id     BIGINT       NOT NULL,
     status         VARCHAR(20)  NOT NULL,
 
@@ -26,10 +26,10 @@ CREATE TABLE mission_attempts (
     created_at     DATETIME(6)  NOT NULL,
     updated_at     DATETIME(6)  NOT NULL,
 
-    CONSTRAINT fk_attempt_session FOREIGN KEY (session_id) REFERENCES sessions (id),
+    CONSTRAINT fk_attempt_user    FOREIGN KEY (user_id)    REFERENCES users (id),
     CONSTRAINT fk_attempt_mission FOREIGN KEY (mission_id) REFERENCES mission_definitions (id),
 
     -- 조회 성능 인덱스
-    INDEX idx_attempt_session_mission (session_id, mission_id),
-    INDEX idx_attempt_session_date    (session_id, mission_id, attempt_date)
+    INDEX idx_attempt_user_mission (user_id, mission_id),
+    INDEX idx_attempt_user_date    (user_id, mission_id, attempt_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
