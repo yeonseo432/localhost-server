@@ -19,6 +19,10 @@ jwt:
   secret: local-secret-key-must-be-at-least-32-chars-long
   expiration-in-ms: 86400000
 
+elice:
+  api-url: ${INVENTORY_API_URL:http://localhost:8000}
+  api-key: ${INVENTORY_API_KEY:dummy-key}
+
 kakao:
   api-key: be4784acd9547a84c372e98dc8878f53
 

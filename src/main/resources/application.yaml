@@ -16,8 +16,10 @@ spring:
       max-file-size: 20MB
       max-request-size: 20MB
 
-fastapi:
-  base-url: http://localhost:8000
+elice:
+  api-url: ${INVENTORY_API_URL}
+  api-key: ${INVENTORY_API_KEY}
+  model: gemini-2.5-flash
 
 kakao:
   api-key: ${KAKAO_API_KEY}

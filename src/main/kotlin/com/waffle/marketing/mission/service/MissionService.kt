@@ -35,7 +35,7 @@ class MissionService(
     private val storeRepository: StoreRepository,
     private val s3ImageServiceProvider: ObjectProvider<S3ImageService>,
     private val objectMapper: ObjectMapper,
-    private val fastApiMissionClient: FastApiMissionClient,
+    private val eliceAiClient: EliceAiClient,
     private val timeProvider: TimeProvider,
 ) {
     // ── CRUD ──────────────────────────────────────────────────────────────────
@@ -369,7 +369,7 @@ class MissionService(
         mission: MissionDefinition,
         imageBytes: ByteArray,
     ): MissionAttemptResponse {
-        val aiResult = fastApiMissionClient.analyzeReceipt(imageBytes, mission.configJson)
+        val aiResult = eliceAiClient.analyzeReceipt(imageBytes, mission.configJson)
         val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
@@ -391,7 +391,7 @@ class MissionService(
         mission: MissionDefinition,
         imageBytes: ByteArray,
     ): MissionAttemptResponse {
-        val aiResult = fastApiMissionClient.compareInventory(imageBytes, mission.configJson)
+        val aiResult = eliceAiClient.compareInventory(imageBytes, mission.configJson)
         val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
