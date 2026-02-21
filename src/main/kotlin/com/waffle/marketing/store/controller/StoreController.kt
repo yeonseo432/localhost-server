@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
@@ -31,11 +32,24 @@ import org.springframework.web.bind.annotation.RestController
 class StoreController(
     private val storeService: StoreService,
 ) {
-    @Operation(summary = "전체 매장 목록 조회")
-    @ApiResponse(responseCode = "200", description = "매장 목록 반환")
+    @Operation(
+        summary = "전체 매장 목록 조회",
+        description = "위도(lat), 경도(lng)를 둘 다 전달하면 가까운 순으로 정렬합니다. 둘 다 생략하면 ID 순으로 반환합니다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "매장 목록 반환"),
+        ApiResponse(
+            responseCode = "400",
+            description = "위도/경도 중 하나만 입력",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+    )
     @SecurityRequirements // 공개
     @GetMapping
-    fun getAll(): List<StoreResponse> = storeService.getAll()
+    fun getAll(
+        @RequestParam(required = false) lat: Double?,
+        @RequestParam(required = false) lng: Double?,
+    ): List<StoreResponse> = storeService.getAll(lat, lng)
 
     @Operation(summary = "매장 단건 조회")
     @ApiResponses(
@@ -51,6 +65,14 @@ class StoreController(
     fun getById(
         @PathVariable storeId: Long,
     ): StoreResponse = storeService.getById(storeId)
+
+    @Operation(summary = "내 매장 목록 조회", description = "로그인한 OWNER의 매장 목록을 반환합니다.")
+    @ApiResponse(responseCode = "200", description = "내 매장 목록 반환")
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('OWNER')")
+    fun getMy(
+        @Parameter(hidden = true) @AuthenticationPrincipal ownerId: Long,
+    ): List<StoreResponse> = storeService.getMyStores(ownerId)
 
     @Operation(summary = "매장 등록", description = "OWNER 계정으로 로그인 후 Bearer 토큰을 입력해야 합니다.")
     @ApiResponses(

@@ -7,8 +7,14 @@ import com.waffle.marketing.store.dto.StoreRequest
 import com.waffle.marketing.store.dto.StoreResponse
 import com.waffle.marketing.store.model.Store
 import com.waffle.marketing.store.repository.StoreRepository
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 @Service
 class StoreService(
@@ -16,7 +22,28 @@ class StoreService(
     private val kakaoGeocodingClient: KakaoGeocodingClient,
 ) {
     @Transactional(readOnly = true)
-    fun getAll(): List<StoreResponse> = storeRepository.findAll().map { it.toResponse() }
+    fun getAll(
+        lat: Double?,
+        lng: Double?,
+    ): List<StoreResponse> {
+        if ((lat == null) != (lng == null)) {
+            throw BadRequestException("위도와 경도는 둘 다 입력하거나 둘 다 생략해야 합니다")
+        }
+
+        val stores = storeRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
+
+        return if (lat != null && lng != null) {
+            stores
+                .sortedBy { haversineDistance(lat, lng, it.lat, it.lng) }
+                .map { it.toResponse() }
+        } else {
+            stores.map { it.toResponse() }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun getMyStores(ownerId: Long): List<StoreResponse> =
+        storeRepository.findAllByOwnerId(ownerId).map { it.toResponse() }
 
     @Transactional(readOnly = true)
     fun getById(storeId: Long): StoreResponse =
@@ -67,6 +94,21 @@ class StoreService(
         }
 
         storeRepository.delete(store)
+    }
+
+    private fun haversineDistance(
+        lat1: Double,
+        lng1: Double,
+        lat2: Double,
+        lng2: Double,
+    ): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLng = Math.toRadians(lng2 - lng1)
+        val a =
+            sin(dLat / 2).pow(2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLng / 2).pow(2)
+        return r * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
 
     private fun Store.toResponse() =
