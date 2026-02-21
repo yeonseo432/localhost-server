@@ -4,7 +4,6 @@ import com.waffle.marketing.common.exception.BadRequestException
 import com.waffle.marketing.common.exception.MissionAlreadyCompletedException
 import com.waffle.marketing.common.exception.ResourceForbiddenException
 import com.waffle.marketing.common.extension.ensureNotNull
-import com.waffle.marketing.mission.dto.MissionAttemptRequest
 import com.waffle.marketing.mission.dto.MissionAttemptResponse
 import com.waffle.marketing.mission.dto.MissionCreateRequest
 import com.waffle.marketing.mission.dto.MissionDefinitionResponse
@@ -211,25 +210,41 @@ class MissionService(
     // ── 판독 (Attempt) ────────────────────────────────────────────────────────
 
     /**
-     * 미션 판독 (단일 엔드포인트).
+     * 미션 판독 (JSON 바디 — M1/M5 전용).
      * - M1(시간대): 빈 바디 또는 {}
      * - M2(체류): 사용 불가 — /attempts/checkin, /attempts/checkout 엔드포인트 사용
-     * - M3(영수증)/M4(재고): request.imageUrl 필수
+     * - M3(영수증)/M4(재고): multipart 엔드포인트 사용
      * - M5(스탬프): 빈 바디 또는 {}
      */
     @Transactional
     fun attemptMission(
         userId: Long,
         missionId: Long,
-        request: MissionAttemptRequest,
     ): MissionAttemptResponse {
         val mission = resolveAndGuard(userId, missionId)
         return when (mission.type) {
             MissionType.TIME_WINDOW -> handleTimeWindow(userId, missionId, mission)
             MissionType.DWELL -> throw BadRequestException("M2 체류 미션은 /attempts/checkin 및 /attempts/checkout 엔드포인트를 사용하세요")
-            MissionType.RECEIPT -> handleReceipt(userId, missionId, mission, request.imageUrl)
-            MissionType.INVENTORY -> handleInventory(userId, missionId, mission, request.imageUrl)
+            MissionType.RECEIPT, MissionType.INVENTORY -> throw BadRequestException("M3/M4 미션은 multipart/form-data로 이미지를 업로드하세요")
             MissionType.STAMP -> handleStamp(userId, missionId, mission)
+        }
+    }
+
+    /**
+     * 미션 판독 (multipart 이미지 — M3/M4 전용).
+     * 프론트에서 이미지 파일을 직접 업로드.
+     */
+    @Transactional
+    fun attemptMissionWithImage(
+        userId: Long,
+        missionId: Long,
+        imageBytes: ByteArray,
+    ): MissionAttemptResponse {
+        val mission = resolveAndGuard(userId, missionId)
+        return when (mission.type) {
+            MissionType.RECEIPT -> handleReceipt(userId, missionId, mission, imageBytes)
+            MissionType.INVENTORY -> handleInventory(userId, missionId, mission, imageBytes)
+            else -> throw BadRequestException("이미지 업로드는 M3(영수증)/M4(재고) 미션만 지원합니다")
         }
     }
 
@@ -339,10 +354,9 @@ class MissionService(
         userId: Long,
         missionId: Long,
         mission: MissionDefinition,
-        imageUrl: String?,
+        imageBytes: ByteArray,
     ): MissionAttemptResponse {
-        val url = imageUrl ?: throw BadRequestException("M3 영수증 미션은 imageUrl이 필요합니다")
-        val aiResult = fastApiMissionClient.analyzeReceipt(url, mission.configJson)
+        val aiResult = fastApiMissionClient.analyzeReceipt(imageBytes, mission.configJson)
         val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
@@ -350,7 +364,6 @@ class MissionService(
                     userId = userId,
                     missionId = missionId,
                     status = status,
-                    imageUrl = url,
                     aiResultJson = aiResult.rawJson,
                 ),
             )
@@ -363,10 +376,9 @@ class MissionService(
         userId: Long,
         missionId: Long,
         mission: MissionDefinition,
-        imageUrl: String?,
+        imageBytes: ByteArray,
     ): MissionAttemptResponse {
-        val url = imageUrl ?: throw BadRequestException("M4 재고 미션은 imageUrl이 필요합니다")
-        val aiResult = fastApiMissionClient.compareInventory(url, mission.configJson)
+        val aiResult = fastApiMissionClient.compareInventory(imageBytes, mission.configJson)
         val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
@@ -374,7 +386,6 @@ class MissionService(
                     userId = userId,
                     missionId = missionId,
                     status = status,
-                    imageUrl = url,
                     aiResultJson = aiResult.rawJson,
                 ),
             )

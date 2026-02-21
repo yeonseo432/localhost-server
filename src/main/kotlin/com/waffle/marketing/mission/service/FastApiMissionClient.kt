@@ -18,12 +18,11 @@ data class AiJudgmentResult(
 class FastApiMissionClient(
     @Qualifier("fastApiRestClient") private val fastApiRestClient: RestClient,
 ) {
-    /** M3: 영수증 OCR + 제품 매칭 — imageUrl에서 이미지 다운로드 후 FastAPI에 multipart 전송 */
+    /** M3: 영수증 OCR + 제품 매칭 — 이미지 바이트를 FastAPI에 multipart 전송 */
     fun analyzeReceipt(
-        imageUrl: String,
+        imageBytes: ByteArray,
         configJson: String,
     ): AiJudgmentResult {
-        val imageBytes = downloadImage(imageUrl)
         val body = buildMultipartBody(imageBytes, "receipt.jpg", configJson)
 
         return fastApiRestClient
@@ -35,12 +34,11 @@ class FastApiMissionClient(
             .body(AiJudgmentResult::class.java)!!
     }
 
-    /** M4: 재고 이미지 비교 판정 — imageUrl에서 이미지 다운로드 후 FastAPI에 multipart 전송 */
+    /** M4: 재고 이미지 비교 판정 — 이미지 바이트를 FastAPI에 multipart 전송 */
     fun compareInventory(
-        imageUrl: String,
+        imageBytes: ByteArray,
         configJson: String,
     ): AiJudgmentResult {
-        val imageBytes = downloadImage(imageUrl)
         val body = buildMultipartBody(imageBytes, "inventory.jpg", configJson)
 
         return fastApiRestClient
@@ -51,14 +49,6 @@ class FastApiMissionClient(
             .retrieve()
             .body(AiJudgmentResult::class.java)!!
     }
-
-    private fun downloadImage(imageUrl: String): ByteArray =
-        RestClient
-            .create()
-            .get()
-            .uri(imageUrl)
-            .retrieve()
-            .body(ByteArray::class.java)!!
 
     private fun buildMultipartBody(
         imageBytes: ByteArray,
