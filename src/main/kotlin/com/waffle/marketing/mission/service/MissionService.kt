@@ -98,7 +98,13 @@ class MissionService(
         val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
-                MissionAttempt(userId = userId, missionId = missionId, status = status, imageUrl = imageUrl, aiResultJson = aiResult.rawJson),
+                MissionAttempt(
+                    userId = userId,
+                    missionId = missionId,
+                    status = status,
+                    imageUrl = imageUrl,
+                    aiResultJson = aiResult.rawJson,
+                ),
             )
         val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
         return attempt.toResponse(retryHint = aiResult.retryHint, rewardId = rewardId)
@@ -118,7 +124,13 @@ class MissionService(
         val status = if (aiResult.match) AttemptStatus.SUCCESS else AttemptStatus.RETRY
         val attempt =
             missionAttemptRepository.save(
-                MissionAttempt(userId = userId, missionId = missionId, status = status, imageUrl = imageUrl, aiResultJson = aiResult.rawJson),
+                MissionAttempt(
+                    userId = userId,
+                    missionId = missionId,
+                    status = status,
+                    imageUrl = imageUrl,
+                    aiResultJson = aiResult.rawJson,
+                ),
             )
         val rewardId = if (status == AttemptStatus.SUCCESS) rewardService.issue(userId, mission) else null
         return attempt.toResponse(retryHint = aiResult.retryHint, rewardId = rewardId)
