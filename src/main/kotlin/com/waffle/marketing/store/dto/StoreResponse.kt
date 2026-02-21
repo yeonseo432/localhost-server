@@ -5,8 +5,6 @@ data class StoreResponse(
     val name: String,
     val lat: Double,
     val lng: Double,
-    val radiusM: Int,
-    val address: String?,
     val ownerId: Long?,
     val businessNumber: String?,
     val imageUrl: String?,

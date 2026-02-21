@@ -3,7 +3,7 @@ CREATE TABLE reward_ledger (
     user_id        BIGINT       NOT NULL,
     mission_id     BIGINT       NOT NULL,
     amount         INT          NOT NULL,
-    issued_at      DATETIME(6)  NOT NULL,
+    created_at     DATETIME(6)  NOT NULL,
 
     CONSTRAINT fk_reward_user    FOREIGN KEY (user_id)    REFERENCES users (id),
     CONSTRAINT fk_reward_mission FOREIGN KEY (mission_id) REFERENCES mission_definitions (id),

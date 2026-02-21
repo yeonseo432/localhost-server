@@ -1,6 +1,6 @@
 package com.waffle.marketing.auth.dto
 
-import com.waffle.marketing.auth.model.UserRole
+import com.waffle.marketing.user.model.UserRole
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
@@ -14,9 +14,6 @@ data class SignupRequest(
     @field:NotBlank
     @field:Size(min = 8, max = 12, message = "비밀번호는 8~12자여야 합니다")
     val password: String,
-    @Schema(description = "닉네임", example = "와플유저")
-    @field:NotBlank
-    val nickname: String,
     @Schema(description = "역할 (USER: 미션 참여 / OWNER: 매장 관리)", example = "USER")
     val role: UserRole = UserRole.USER,
 )

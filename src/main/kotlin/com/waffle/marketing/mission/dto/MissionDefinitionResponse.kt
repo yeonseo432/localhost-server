@@ -7,5 +7,5 @@ data class MissionDefinitionResponse(
     val storeId: Long,
     val type: MissionType,
     val configJson: String,
-    val rewardJson: String,
+    val rewardAmount: Int,
 )
