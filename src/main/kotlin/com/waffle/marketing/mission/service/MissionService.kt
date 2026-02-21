@@ -9,6 +9,7 @@ import com.waffle.marketing.mission.dto.MissionAttemptResponse
 import com.waffle.marketing.mission.dto.MissionCreateRequest
 import com.waffle.marketing.mission.dto.MissionDefinitionResponse
 import com.waffle.marketing.mission.dto.MissionUpdateRequest
+import com.waffle.marketing.mission.dto.PresignedUrlResponse
 import com.waffle.marketing.mission.model.AttemptStatus
 import com.waffle.marketing.mission.model.MissionAttempt
 import com.waffle.marketing.mission.model.MissionDefinition
@@ -18,9 +19,11 @@ import com.waffle.marketing.mission.repository.MissionDefinitionRepository
 import com.waffle.marketing.reward.repository.RewardLedgerRepository
 import com.waffle.marketing.reward.service.RewardService
 import com.waffle.marketing.store.repository.StoreRepository
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.node.ObjectNode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -32,6 +35,7 @@ class MissionService(
     private val rewardLedgerRepository: RewardLedgerRepository,
     private val rewardService: RewardService,
     private val storeRepository: StoreRepository,
+    private val s3ImageServiceProvider: ObjectProvider<S3ImageService>,
     private val objectMapper: ObjectMapper,
     // private val fastApiMissionClient: FastApiMissionClient, // TODO: FastAPI 연동 시 활성화
 ) {
@@ -120,6 +124,46 @@ class MissionService(
         if (mission.store.id != storeId) throw BadRequestException("해당 매장의 미션이 아닙니다")
         if (mission.store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
         mission.isActive = false
+    }
+
+    // ── 이미지 업로드 (INVENTORY 답안 이미지) ────────────────────────────────
+
+    /** INVENTORY 미션 답안 이미지 업로드용 presigned PUT URL 발급 (OWNER 전용, prod 전용) */
+    fun generateAnswerImagePresignedUrl(
+        storeId: Long,
+        missionId: Long,
+        ownerId: Long,
+        contentType: String,
+    ): PresignedUrlResponse {
+        val mission = resolveOwnerMission(storeId, missionId, ownerId)
+        if (mission.type != MissionType.INVENTORY) throw BadRequestException("INVENTORY 미션만 이미지를 업로드할 수 있습니다")
+        val s3 = s3ImageServiceProvider.ifAvailable ?: throw BadRequestException("S3가 구성되지 않은 환경입니다")
+        val (presignedUrl, imageUrl) = s3.generatePresignedPutUrl(missionId, contentType)
+        return PresignedUrlResponse(presignedUrl = presignedUrl, imageUrl = imageUrl)
+    }
+
+    /**
+     * 프론트가 S3 업로드 완료 후 호출.
+     * 기존 answerImageUrl이 우리 버킷 소속이면 S3에서 삭제하고, configJson을 신규 URL로 갱신.
+     */
+    @Transactional
+    fun confirmAnswerImageUpload(
+        storeId: Long,
+        missionId: Long,
+        ownerId: Long,
+        imageUrl: String,
+    ): MissionDefinitionResponse {
+        val mission = resolveOwnerMission(storeId, missionId, ownerId)
+        if (mission.type != MissionType.INVENTORY) throw BadRequestException("INVENTORY 미션만 이미지를 업로드할 수 있습니다")
+
+        val configNode = objectMapper.readTree(mission.configJson) as ObjectNode
+        val oldImageUrl = configNode.get("answerImageUrl")?.textValue()
+        if (!oldImageUrl.isNullOrBlank()) {
+            s3ImageServiceProvider.ifAvailable?.deleteIfOurs(oldImageUrl)
+        }
+        configNode.put("answerImageUrl", imageUrl)
+        mission.configJson = objectMapper.writeValueAsString(configNode)
+        return mission.toResponse()
     }
 
     // ── 판독 (Attempt) ────────────────────────────────────────────────────────
@@ -378,14 +422,30 @@ class MissionService(
                 requireString("targetProductKey")
             }
             MissionType.INVENTORY -> {
-                // {"answerImageUrl":"https://..."}
-                requireString("answerImageUrl")
+                // {"answerImageUrl":"https://..."} — 이미지는 /image/presigned-url → /image/confirm 플로우로 설정 가능
+                // 미션 생성 시점에는 빈 값도 허용 (이후 업로드 플로우로 설정)
             }
             MissionType.STAMP -> {
                 // {"requiredCount":5}
                 requireInt("requiredCount", min = 1)
             }
         }
+    }
+
+    /** 미션 조회 + 매장·소유자 검증 (OWNER 전용 작업에 사용) */
+    private fun resolveOwnerMission(
+        storeId: Long,
+        missionId: Long,
+        ownerId: Long,
+    ): MissionDefinition {
+        val mission =
+            missionDefinitionRepository
+                .findById(missionId)
+                .orElse(null)
+                .ensureNotNull("미션을 찾을 수 없습니다: $missionId")
+        if (mission.store.id != storeId) throw BadRequestException("해당 매장의 미션이 아닙니다")
+        if (mission.store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
+        return mission
     }
 
     /** 미션 조회 + 이미 완료된 미션이면 예외 */

@@ -27,8 +27,8 @@ class MissionDefinition(
      * 미션별 설정 JSON.
      * TIME_WINDOW: {"startHour":15,"endHour":17,"days":["MON","TUE"]}
      * DWELL:       {"durationMinutes":10}
-     * RECEIPT:     {"targetProductKey":"아메리카노","confidenceThreshold":0.8}
-     * INVENTORY:   {"answerImageUrl":"https://...", "confidenceThreshold":0.75}
+     * RECEIPT:     {"targetProductKey":"아메리카노"}
+     * INVENTORY:   {"answerImageUrl":"https://..."}
      * STAMP:       {"requiredCount":3}
      */
     @Column(nullable = false, columnDefinition = "TEXT")
