@@ -93,8 +93,8 @@ class MissionDefinitionController(
                     ),
                     ExampleObject(
                         name = "M4 INVENTORY",
-                        summary = "재고 이미지 비교 — 등록 후 /{missionId}/image/presigned-url 로 답안 이미지 업로드",
-                        value = """{"type":"INVENTORY","configJson":{},"rewardAmount":100}""",
+                        summary = "재고 이미지 비교 — 먼저 /inventory/presigned-url 로 이미지 업로드 후 answerImageUrl을 포함해 등록",
+                        value = """{"type":"INVENTORY","configJson":{"answerImageUrl":"https://example.com/img"},"rewardAmount":100}""",
                     ),
                     ExampleObject(
                         name = "M5 STAMP",

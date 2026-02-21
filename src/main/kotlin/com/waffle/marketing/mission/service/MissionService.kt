@@ -151,6 +151,15 @@ class MissionService(
                 .ensureNotNull("미션을 찾을 수 없습니다: $missionId")
         if (mission.store.id != storeId) throw BadRequestException("해당 매장의 미션이 아닙니다")
         if (mission.store.ownerId != ownerId) throw ResourceForbiddenException("해당 매장의 소유자가 아닙니다")
+        if (mission.type == MissionType.INVENTORY) {
+            val answerImageUrl =
+                runCatching {
+                    objectMapper.readTree(mission.configJson).get("answerImageUrl")?.textValue()
+                }.getOrNull()
+            if (!answerImageUrl.isNullOrBlank()) {
+                s3ImageServiceProvider.ifAvailable?.deleteIfOurs(answerImageUrl)
+            }
+        }
         mission.isActive = false
     }
 
