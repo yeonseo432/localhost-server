@@ -21,6 +21,12 @@ class Store(
     var radiusM: Int = 100,
     @Column(length = 255)
     var address: String? = null,
+    @Column
+    var ownerId: Long? = null,
+    @Column(length = 20)
+    var businessNumber: String? = null,
+    @Column(length = 512)
+    var imageUrl: String? = null,
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

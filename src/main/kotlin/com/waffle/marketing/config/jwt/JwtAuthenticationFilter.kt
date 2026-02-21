@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
@@ -24,13 +25,15 @@ class JwtAuthenticationFilter(
         try {
             val token = extractTokenFromRequest(request)
             if (token != null && jwtTokenProvider.validateToken(token)) {
-                val sessionId = jwtTokenProvider.getSessionIdFromToken(token)
-                val authentication = UsernamePasswordAuthenticationToken(sessionId, null, emptyList())
+                val userId = jwtTokenProvider.getUserIdFromToken(token)
+                val role = jwtTokenProvider.getRoleFromToken(token)
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_$role"))
+                val authentication = UsernamePasswordAuthenticationToken(userId, null, authorities)
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
                 SecurityContextHolder.getContext().authentication = authentication
             }
         } catch (e: Exception) {
-            log.error("세션 토큰 검증 실패: ${e.message}")
+            log.error("JWT 토큰 검증 실패: ${e.message}")
         }
         filterChain.doFilter(request, response)
     }

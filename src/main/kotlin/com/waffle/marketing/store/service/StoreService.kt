@@ -1,6 +1,7 @@
 package com.waffle.marketing.store.service
 
 import com.waffle.marketing.common.extension.ensureNotNull
+import com.waffle.marketing.store.dto.StoreRequest
 import com.waffle.marketing.store.dto.StoreResponse
 import com.waffle.marketing.store.model.Store
 import com.waffle.marketing.store.repository.StoreRepository
@@ -22,6 +23,27 @@ class StoreService(
             .ensureNotNull("매장을 찾을 수 없습니다: $storeId")
             .toResponse()
 
+    @Transactional
+    fun create(
+        request: StoreRequest,
+        ownerId: Long,
+    ): StoreResponse {
+        val store =
+            storeRepository.save(
+                Store(
+                    name = request.name,
+                    lat = request.lat,
+                    lng = request.lng,
+                    radiusM = request.radiusM,
+                    address = request.address,
+                    ownerId = ownerId,
+                    businessNumber = request.businessNumber,
+                    imageUrl = request.imageUrl,
+                ),
+            )
+        return store.toResponse()
+    }
+
     private fun Store.toResponse() =
         StoreResponse(
             id = id!!,
@@ -30,5 +52,8 @@ class StoreService(
             lng = lng,
             radiusM = radiusM,
             address = address,
+            ownerId = ownerId,
+            businessNumber = businessNumber,
+            imageUrl = imageUrl,
         )
 }
