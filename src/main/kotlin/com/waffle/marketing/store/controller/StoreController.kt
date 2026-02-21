@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
@@ -31,11 +32,24 @@ import org.springframework.web.bind.annotation.RestController
 class StoreController(
     private val storeService: StoreService,
 ) {
-    @Operation(summary = "전체 매장 목록 조회")
-    @ApiResponse(responseCode = "200", description = "매장 목록 반환")
+    @Operation(
+        summary = "전체 매장 목록 조회",
+        description = "위도(lat), 경도(lng)를 둘 다 전달하면 가까운 순으로 정렬합니다. 둘 다 생략하면 ID 순으로 반환합니다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "매장 목록 반환"),
+        ApiResponse(
+            responseCode = "400",
+            description = "위도/경도 중 하나만 입력",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+    )
     @SecurityRequirements // 공개
     @GetMapping
-    fun getAll(): List<StoreResponse> = storeService.getAll()
+    fun getAll(
+        @RequestParam(required = false) lat: Double?,
+        @RequestParam(required = false) lng: Double?,
+    ): List<StoreResponse> = storeService.getAll(lat, lng)
 
     @Operation(summary = "매장 단건 조회")
     @ApiResponses(
