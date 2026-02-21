@@ -13,6 +13,10 @@ import jakarta.persistence.Table
 class Store(
     @Column(nullable = false, length = 100)
     var name: String,
+    @Column(nullable = false, length = 200)
+    var address: String,
+    @Column(length = 100)
+    var detailAddress: String? = null,
     @Column(nullable = false)
     var lat: Double,
     @Column(nullable = false)

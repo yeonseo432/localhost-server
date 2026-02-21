@@ -22,5 +22,8 @@ jwt:
 fastapi:
   base-url: ${FASTAPI_BASE_URL}
 
+kakao:
+  api-key: ${KAKAO_API_KEY}
+
 server:
   port: 8080

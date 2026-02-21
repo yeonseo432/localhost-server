@@ -19,6 +19,9 @@ spring:
 fastapi:
   base-url: http://localhost:8000
 
+kakao:
+  api-key: ${KAKAO_API_KEY}
+
 jwt:
   secret: ${JWT_SECRET:marketing-jwt-secret-key-must-be-at-least-32-bytes-long}
   expiration-in-ms: 86400000  # 24시간 (프로필별로 재정의)

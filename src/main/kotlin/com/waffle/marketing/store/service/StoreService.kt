@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class StoreService(
     private val storeRepository: StoreRepository,
+    private val kakaoGeocodingClient: KakaoGeocodingClient,
 ) {
     @Transactional(readOnly = true)
     fun getAll(): List<StoreResponse> = storeRepository.findAll().map { it.toResponse() }
@@ -28,12 +29,15 @@ class StoreService(
         request: StoreRequest,
         ownerId: Long,
     ): StoreResponse {
+        val geoPoint = kakaoGeocodingClient.geocode(request.address)
         val store =
             storeRepository.save(
                 Store(
                     name = request.name,
-                    lat = request.lat,
-                    lng = request.lng,
+                    address = request.address,
+                    detailAddress = request.detailAddress,
+                    lat = geoPoint.lat,
+                    lng = geoPoint.lng,
                     ownerId = ownerId,
                     businessNumber = request.businessNumber,
                     imageUrl = request.imageUrl,
@@ -46,6 +50,8 @@ class StoreService(
         StoreResponse(
             id = id!!,
             name = name,
+            address = address,
+            detailAddress = detailAddress,
             lat = lat,
             lng = lng,
             ownerId = ownerId,
