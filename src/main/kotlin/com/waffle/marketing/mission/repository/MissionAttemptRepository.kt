@@ -27,6 +27,19 @@ interface MissionAttemptRepository : JpaRepository<MissionAttempt, Long> {
         status: AttemptStatus,
     ): Long
 
-    // 내 미션 이력 조회
+    // 내 미션 이력 조회 (전체)
     fun findByUserId(userId: Long): List<MissionAttempt>
+
+    // 특정 미션의 내 수행 이력
+    fun findByUserIdAndMissionId(
+        userId: Long,
+        missionId: Long,
+    ): List<MissionAttempt>
+
+    // M5: 오늘 스탬프 attempt 조회 (alreadyStampedToday 후 반환용)
+    fun findTopByUserIdAndMissionIdAndAttemptDateOrderByIdDesc(
+        userId: Long,
+        missionId: Long,
+        attemptDate: LocalDate,
+    ): MissionAttempt?
 }

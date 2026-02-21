@@ -25,5 +25,10 @@ fastapi:
 kakao:
   api-key: ${KAKAO_API_KEY}
 
+aws:
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+    region: ${AWS_S3_REGION}
+
 server:
   port: 8080

@@ -28,3 +28,7 @@ class MissionAlreadyCompletedException(
 class MissionVerificationFailedException(
     val retryHint: String?,
 ) : BusinessException("미션 인증에 실패했습니다", "MISSION_VERIFICATION_FAILED")
+
+class ExternalApiException(
+    message: String,
+) : BusinessException(message, "EXTERNAL_API_ERROR")

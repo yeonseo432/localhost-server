@@ -1,5 +1,6 @@
 package com.waffle.marketing.common.exception
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -18,6 +19,8 @@ data class ErrorResponse(
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleNotFound(e: ResourceNotFoundException): ResponseEntity<ErrorResponse> =
         ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -54,6 +57,14 @@ class GlobalExceptionHandler {
             ErrorResponse(status = 422, error = "Verification Failed", message = e.message, errorCode = e.errorCode),
         )
 
+    @ExceptionHandler(ExternalApiException::class)
+    fun handleExternalApi(e: ExternalApiException): ResponseEntity<ErrorResponse> {
+        log.error("외부 API 오류: {}", e.message)
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(
+            ErrorResponse(status = 502, error = "Bad Gateway", message = e.message, errorCode = e.errorCode),
+        )
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val errors = e.bindingResult.fieldErrors.associate { it.field to it.defaultMessage }
@@ -63,8 +74,10 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleUnexpected(e: Exception): ResponseEntity<ErrorResponse> =
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+    fun handleUnexpected(e: Exception): ResponseEntity<ErrorResponse> {
+        log.error("예상치 못한 오류 발생: {}", e.message, e)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
             ErrorResponse(status = 500, error = "Internal Server Error", message = "서버 오류가 발생했습니다"),
         )
+    }
 }

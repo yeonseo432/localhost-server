@@ -10,3 +10,8 @@ out/
 *.log
 CLAUDE.md
 .claude/
+
+
+# 작업 기록용 md 파일 — README.md만 깃허브에 올라감
+*.md
+!README.md
