@@ -3,6 +3,7 @@ package com.waffle.marketing.user.service
 import com.waffle.marketing.common.exception.BadRequestException
 import com.waffle.marketing.common.exception.ResourceNotFoundException
 import com.waffle.marketing.store.repository.StoreRepository
+import com.waffle.marketing.user.dto.UpdateUserRequest
 import com.waffle.marketing.user.dto.UserResponse
 import com.waffle.marketing.user.model.UserRole
 import com.waffle.marketing.user.repository.UserRepository
@@ -20,6 +21,32 @@ class UserService(
             userRepository.findById(userId).orElseThrow {
                 ResourceNotFoundException("사용자를 찾을 수 없습니다: $userId")
             }
+        return UserResponse(
+            id = user.id!!,
+            username = user.username,
+            point = user.point,
+            role = user.role.name,
+        )
+    }
+
+    @Transactional
+    fun update(
+        userId: Long,
+        request: UpdateUserRequest,
+    ): UserResponse {
+        val user =
+            userRepository.findById(userId).orElseThrow {
+                ResourceNotFoundException("사용자를 찾을 수 없습니다: $userId")
+            }
+
+        request.username?.let { newUsername ->
+            if (newUsername != user.username && userRepository.existsByUsername(newUsername)) {
+                throw BadRequestException("이미 사용 중인 아이디입니다: $newUsername")
+            }
+            user.username = newUsername
+        }
+        request.password?.let { user.password = it }
+
         return UserResponse(
             id = user.id!!,
             username = user.username,

@@ -1,6 +1,7 @@
 package com.waffle.marketing.user.controller
 
 import com.waffle.marketing.common.exception.ErrorResponse
+import com.waffle.marketing.user.dto.UpdateUserRequest
 import com.waffle.marketing.user.dto.UserResponse
 import com.waffle.marketing.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
@@ -9,10 +10,13 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
@@ -28,6 +32,26 @@ class UserController(
     fun getMe(
         @AuthenticationPrincipal userId: Long,
     ): UserResponse = userService.getUser(userId)
+
+    @Operation(summary = "회원정보 수정", description = "아이디 또는 비밀번호를 변경합니다. 변경할 항목만 전달하면 됩니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "수정 성공"),
+        ApiResponse(
+            responseCode = "400",
+            description = "중복 아이디",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+        ApiResponse(
+            responseCode = "401",
+            description = "인증 필요",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))],
+        ),
+    )
+    @PatchMapping("/me")
+    fun updateMe(
+        @Valid @RequestBody request: UpdateUserRequest,
+        @AuthenticationPrincipal userId: Long,
+    ): UserResponse = userService.update(userId, request)
 
     @Operation(summary = "회원 탈퇴", description = "본인 계정을 삭제합니다. OWNER는 매장을 먼저 삭제해야 합니다.")
     @ApiResponses(
