@@ -9,3 +9,4 @@ out/
 .env
 *.log
 CLAUDE.md
+.claude/
