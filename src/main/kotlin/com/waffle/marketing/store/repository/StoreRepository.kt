@@ -9,5 +9,7 @@ interface StoreRepository : JpaRepository<Store, Long> {
         detailAddress: String?,
     ): Boolean
 
+    fun existsByOwnerId(ownerId: Long): Boolean
+
     fun findAllByOwnerId(ownerId: Long): List<Store>
 }
